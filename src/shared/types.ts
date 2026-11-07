@@ -1,164 +1,99 @@
 /**
- * Universal Website Performance Optimizer
- * Core Type Definitions
+ * Shared type definitions. Everything that crosses a module or process boundary
+ * (background, content script, popup, options) is described here.
  */
 
-export type OptimizationMode = 'balanced' | 'performance' | 'extreme' | 'adaptive_custom';
+/** What the user picks. "adaptive" lets the adaptive engine choose a Level. */
+export type ModeSetting = 'adaptive' | 'balanced' | 'performance' | 'extreme';
+/** The concrete intensity that is actually applied to a page. */
+export type Level = 'balanced' | 'performance' | 'extreme';
 
-export type NetworkConditionType = 'slow-2g' | '2g' | '3g' | '4g' | 'unknown';
+export const MODE_SETTINGS: readonly ModeSetting[] = ['adaptive', 'balanced', 'performance', 'extreme'];
+export const LEVELS: readonly Level[] = ['balanced', 'performance', 'extreme'];
 
-export interface DeviceCapabilities {
-  hardwareConcurrency: number;
-  deviceMemoryGB: number | null;
-  isLowEndDevice: boolean;
-  isMobile: boolean;
-  networkType: NetworkConditionType;
-  saveDataEnabled: boolean;
-  batteryLevel: number | null;
-  isBatteryCharging: boolean | null;
+export interface ModuleFlags {
+  network: boolean;
+  images: boolean;
+  videos: boolean;
+  rendering: boolean;
+  dom: boolean;
 }
+export type ModuleName = keyof ModuleFlags;
+export const MODULE_NAMES: readonly ModuleName[] = ['network', 'images', 'videos', 'rendering', 'dom'];
 
-export interface PageWorkloadMetrics {
-  domNodeCount: number;
-  scriptCount: number;
-  stylesheetCount: number;
-  imageCount: number;
-  videoCount: number;
-  iframeCount: number;
-  longTasksCount: number;
-  totalLongTaskDurationMs: number;
-}
-
-export interface LivePerformanceStats {
-  navigationStart: number;
-  domContentLoadedMs: number;
-  loadEventMs: number;
-  jsHeapUsedMB: number | null;
-  jsHeapTotalMB: number | null;
-  jsHeapLimitMB: number | null;
-  totalRequests: number;
-  blockedRequests: number;
-  transferredBytes: number;
-  estimatedSavedBytes: number;
-  fpsEstimate: number;
-  activeModulesCount: number;
-  isOptimized: boolean;
-  mode: OptimizationMode;
-}
-
-export interface CpuOptimizationSettings {
-  enabled: boolean;
-  throttleBackgroundTimers: boolean;
-  throttleScrollEvents: boolean;
-  pauseOffscreenCanvases: boolean;
-  maxBackgroundIntervalMs: number;
-}
-
-export interface MemoryOptimizationSettings {
-  enabled: boolean;
-  enableWeakRefTracking: boolean;
-  cleanDetachedDomNodes: boolean;
-  teardownOnUnload: boolean;
-  periodicCleanupIntervalSec: number;
-}
-
-export interface ScriptOptimizationSettings {
-  enabled: boolean;
-  blockHeavyTrackers: boolean;
+export interface NetworkOptions {
   blockSessionReplay: boolean;
-  blockTelemetryBeacons: boolean;
-  protectEssentialScripts: boolean;
+  blockAnalytics: boolean;
+  blockAds: boolean;
+  useCustomRules: boolean;
 }
-
-export interface ImageOptimizationSettings {
-  enabled: boolean;
-  enforceLazyLoading: boolean;
-  enforceAsyncDecoding: boolean;
-  deferOffscreenImages: boolean;
-  pauseAnimatedGifsOffscreen: boolean;
+export interface ImageOptions {
+  lazyLoading: boolean;
+  asyncDecoding: boolean;
 }
-
-export interface VideoOptimizationSettings {
-  enabled: boolean;
+export interface VideoOptions {
   blockAutoplay: boolean;
-  pauseOffscreenVideos: boolean;
-  pauseBackgroundTabVideos: boolean;
-  suppressVideoPreviews: boolean;
+  pauseOffscreen: boolean;
+  pauseInBackground: boolean;
+}
+export interface RenderingOptions {
+  pauseOffscreenAnimations: boolean;
+  /** Takes effect only at the "extreme" level. */
+  reduceEffects: boolean;
+}
+export interface DomOptions {
+  contentVisibility: boolean;
 }
 
-export interface RenderingOptimizationSettings {
+export interface SiteOverride {
+  mode?: ModeSetting;
+  modules?: Partial<ModuleFlags>;
+}
+
+export interface Config {
+  schema: 2;
+  /** Master switch. Off means nothing runs and all bundled rulesets are disabled. */
   enabled: boolean;
-  reduceCssAnimations: boolean;
-  disableExpensiveFilters: boolean;
-  disableBackdropBlur: boolean;
-  disableHeavyBoxShadows: boolean;
-  enforceReducedMotion: boolean;
+  mode: ModeSetting;
+  modules: ModuleFlags;
+  network: NetworkOptions;
+  images: ImageOptions;
+  videos: VideoOptions;
+  rendering: RenderingOptions;
+  dom: DomOptions;
+  /** User-managed hostnames that are never optimized (subdomains included). */
+  allowlist: string[];
+  /** Validated custom block patterns (see custom-rules.ts). */
+  customRules: string[];
+  /** Per-site overrides keyed by normalized hostname. */
+  sites: Record<string, SiteOverride>;
 }
 
-export interface NetworkOptimizationSettings {
-  enabled: boolean;
-  blockKnownAdNetworks: boolean;
-  blockTrackingPixels: boolean;
-  blockThirdPartyFontsOnSlowNetwork: boolean;
-  customBlockPatterns: string[];
+/** Why optimization is not running on a page. */
+export type OffReason =
+  | 'master-off'
+  | 'unsupported-page'
+  | 'builtin-protected'
+  | 'allowlisted'
+  | 'essential-path'
+  | 'tab-paused'
+  | 'compare-baseline'
+  | 'sensitive-input';
+
+export interface ContentSettings {
+  images: { enabled: boolean } & ImageOptions;
+  videos: { enabled: boolean } & VideoOptions;
+  rendering: { enabled: boolean } & RenderingOptions;
+  dom: { enabled: boolean } & DomOptions;
 }
 
-export interface DomOptimizationSettings {
-  enabled: boolean;
-  enableContentVisibilityAuto: boolean;
-  batchMutationObservers: boolean;
-  throttleSubtreeScans: boolean;
+/** What the background hands to a content script for one page load. */
+export interface Plan {
+  active: boolean;
+  reason: OffReason | null;
+  mode: ModeSetting;
+  settings: ContentSettings;
+  /** Whether the content script should take a one-shot sample automatically. */
+  autoSample: 'none' | 'adaptive' | 'compare';
+  runId: string | null;
 }
-
-export interface OptimizerConfiguration {
-  masterEnabled: boolean;
-  mode: OptimizationMode;
-  autoAdaptive: boolean;
-  cpu: CpuOptimizationSettings;
-  memory: MemoryOptimizationSettings;
-  scripts: ScriptOptimizationSettings;
-  images: ImageOptimizationSettings;
-  videos: VideoOptimizationSettings;
-  rendering: RenderingOptimizationSettings;
-  network: NetworkOptimizationSettings;
-  dom: DomOptimizationSettings;
-  safety: {
-    allowlist: string[];
-    emergencyDisabled: boolean;
-    protectPaymentAndAuth: boolean;
-  };
-}
-
-export interface TabSessionState {
-  tabId: number;
-  url: string;
-  hostname: string;
-  isAllowlisted: boolean;
-  isProtectedAuthSite: boolean;
-  activeMode: OptimizationMode;
-  stats: LivePerformanceStats;
-  workload: PageWorkloadMetrics;
-  device: DeviceCapabilities;
-  appliedOptimizations: string[];
-  lastUpdated: number;
-}
-
-export type MessageAction =
-  | 'GET_TAB_STATE'
-  | 'TAB_STATE_RESPONSE'
-  | 'SET_MASTER_ENABLED'
-  | 'SET_MODE'
-  | 'SET_MODULE_ENABLED'
-  | 'UPDATE_CONFIG'
-  | 'TOGGLE_ALLOWLIST'
-  | 'EMERGENCY_RESET'
-  | 'REPORT_PAGE_METRICS'
-  | 'GET_DEVICE_DIAGNOSTICS'
-  | 'CLEAR_SESSION_STATE';
-
-export interface ExtensionMessage<T = unknown> {
-  action: MessageAction;
-  tabId?: number;
-  payload?: T;
-}
-

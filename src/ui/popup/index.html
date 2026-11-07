@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Universal Performance Optimizer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="popup-container" aria-busy="true" id="root">
+    <header class="popup-header">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/></svg>
+        <div class="brand-text">
+          <span class="brand-title">Performance Optimizer</span>
+          <span class="brand-subtitle">Local only. Session only.</span>
+        </div>
+      </div>
+      <label class="switch" title="Turn the optimizer on or off everywhere">
+        <input type="checkbox" id="master-toggle" aria-label="Optimizer enabled">
+        <span class="slider"></span>
+      </label>
+    </header>
+
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+    <section class="domain-card" aria-label="Current site">
+      <div class="domain-info">
+        <span class="domain-host" id="domain-hostname">Loading...</span>
+        <span class="status-badge bypassed" id="domain-status-badge">...</span>
+      </div>
+      <p class="hint" id="status-detail"></p>
+      <div class="domain-actions">
+        <button class="btn btn-secondary btn-sm" id="btn-pause-tab" type="button" disabled>Pause on this tab</button>
+        <button class="btn btn-secondary btn-sm" id="btn-allow" type="button" disabled>Skip this site</button>
+      </div>
+      <p class="hint">Pausing reloads the tab without any optimization, which is the quickest way to recover a broken page. Unsaved input on the page is lost by the reload.</p>
+    </section>
+
+    <section class="section-group" aria-label="Optimization mode">
+      <div class="section-title-row">
+        <span class="section-title">Mode</span>
+        <span class="mode-badge" id="active-mode-indicator">-</span>
+      </div>
+      <div class="scope" role="group" aria-label="Apply changes to">
+        <button class="btn btn-secondary btn-sm scope-btn active" id="scope-site" type="button" aria-pressed="true">This site</button>
+        <button class="btn btn-secondary btn-sm scope-btn" id="scope-all" type="button" aria-pressed="false">All sites</button>
+        <button class="btn btn-secondary btn-sm" id="btn-reset-site" type="button" hidden>Use global settings</button>
+      </div>
+      <div class="mode-grid" role="group" aria-label="Mode">
+        <button class="mode-btn" data-mode="adaptive" type="button"><span class="mode-name">Adaptive</span><span class="mode-desc">Chosen from signals</span></button>
+        <button class="mode-btn" data-mode="balanced" type="button"><span class="mode-name">Balanced</span><span class="mode-desc">Conservative</span></button>
+        <button class="mode-btn" data-mode="performance" type="button"><span class="mode-name">Performance</span><span class="mode-desc">Tighter limits</span></button>
+        <button class="mode-btn" data-mode="extreme" type="button"><span class="mode-name">Extreme</span><span class="mode-desc">Also drops blur</span></button>
+      </div>
+      <p class="hint" id="mode-hint"></p>
+    </section>
+
+    <section class="section-group" aria-label="Modules">
+      <span class="section-title">Modules</span>
+      <div class="module-chips">
+        <label class="chip-label"><input type="checkbox" data-module="network"><span class="chip">Network</span></label>
+        <label class="chip-label"><input type="checkbox" data-module="images"><span class="chip">Images</span></label>
+        <label class="chip-label"><input type="checkbox" data-module="videos"><span class="chip">Videos</span></label>
+        <label class="chip-label"><input type="checkbox" data-module="rendering"><span class="chip">Rendering</span></label>
+        <label class="chip-label"><input type="checkbox" data-module="dom"><span class="chip">DOM</span></label>
+      </div>
+    </section>
+
+    <section class="section-group" aria-label="Measurements">
+      <div class="section-title-row">
+        <span class="section-title">This page</span>
+        <button class="btn btn-secondary btn-sm" id="btn-refresh" type="button" disabled>Refresh</button>
+      </div>
+      <div class="metrics-grid" id="metrics"></div>
+      <details class="explain">
+        <summary>How to read these numbers</summary>
+        <p><strong>Measured</strong> values are read from the browser. <strong>Estimated</strong> values state their method. <strong>Unavailable</strong> means the browser does not expose it. Blocked requests never download, so their size cannot be known and no savings figure is shown.</p>
+      </details>
+    </section>
+
+    <section class="section-group" aria-label="Before and after">
+      <div class="section-title-row">
+        <span class="section-title">Before and after</span>
+        <button class="btn btn-secondary btn-sm" id="btn-compare" type="button" disabled>Measure</button>
+      </div>
+      <p class="hint" id="compare-status">Reloads this page twice, first without and then with the optimizer, and compares what the browser measured. Unsaved input is lost. Results vary between runs.</p>
+      <div id="compare-result"></div>
+    </section>
+
+    <footer class="popup-footer">
+      <button class="btn btn-primary btn-full" id="btn-open-options" type="button">Open dashboard</button>
+      <div class="privacy-note"><span>No telemetry. No remote requests. Settings reset when the browser closes.</span></div>
+    </footer>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

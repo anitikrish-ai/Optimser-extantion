@@ -1,42 +1,52 @@
-# Browser Compatibility & API Support Matrix
+# Browser compatibility
 
-This document provides a technical assessment of browser engine compatibility and known limitations for **Universal Website Performance Optimizer**.
+Status key: **tested with fakes** means unit tests run against a fake browser API. **Not tested in a real browser** means exactly that. No real-browser testing has been done yet.
 
----
+## Feature support (by design, via feature detection)
 
-## 1. Compatibility Matrix
+| Feature | Chromium (102+) | Firefox (115+) | Safari |
+| --- | --- | --- | --- |
+| Background | Service worker | Event page (`background.scripts`) | Via converter, untested |
+| Request blocking (declarativeNetRequest) | Supported | Supported | Support level not verified. Untested |
+| Session-scoped rules | Supported | Supported | Unverified. Falls back to dynamic rules |
+| Toggle bundled rulesets | Supported | Supported | Unverified |
+| Tab-scoped allow rules (`tabIds`, session only) | Supported | Supported per Firefox schema | Unverified |
+| Blocked-request count | `getMatchedRules` with `activeTab` (rate-limited, so the popup does not poll it). A toolbar badge count is requested through `setExtensionActionOptions` when present, unverified | Not exposed. Shows Unavailable | Not exposed. Shows Unavailable |
+| `storage.session` | Supported | Supported | Unverified. Falls back to memory |
+| Device memory, connection type, Data Saver | Exposed | Not exposed | Not exposed |
+| Long Tasks, JS heap size | Exposed (heap is coarse) | Not exposed | Not exposed |
+| LCP | Exposed | Not verified | Not verified |
+| `content-visibility` | Supported | Not verified | Not verified. The module does nothing if the engine reports no support |
 
-| Feature / API | Chrome / Chromium | Microsoft Edge | Brave Browser | Firefox (Gecko) | Safari (WebKit) |
-|---|---|---|---|---|---|
-| **Manifest Version** | MV3 (Full) | MV3 (Full) | MV3 (Full) | MV3 (Full) | MV3 (Supported) |
-| **Declarative Net Request** | Yes (`chrome.declarativeNetRequest`) | Yes | Yes | Yes (Firefox 113+) | Partial (Safari 15.4+) |
-| **Session Storage** | Yes (`storage.session`) | Yes | Yes | Yes (Firefox 115+) | Fallback to In-Memory |
-| **Content Visibility CSS** | Yes (`content-visibility: auto`) | Yes | Yes | No (Falls back gracefully) | No (Falls back gracefully) |
-| **Device Memory API** | Yes (`navigator.deviceMemory`) | Yes | Yes (Shielded) | No (Unexposed) | No (Unexposed) |
-| **Hardware Concurrency** | Yes (`hardwareConcurrency`) | Yes | Yes (Capped) | Yes | Yes |
-| **Performance Memory** | Yes (`performance.memory`) | Yes | Yes | No (Restricted by design) | No (Restricted by design) |
-| **Intersection Observer** | Yes | Yes | Yes | Yes | Yes |
-| **Mutation Observer** | Yes | Yes | Yes | Yes | Yes |
+A feature that is not supported is disabled and reported in the dashboard; it never throws.
 
----
+## Sources checked
 
-## 2. Browser-Specific Notes & Limitations
+Chromium docs: `getMatchedRules` requires `activeTab` for the tab or the feedback permission, and calls with a user gesture are exempt from its quota; session rules are cleared when the browser shuts down; the `declarativeNetRequest` permission gives implicit block and allow rules without host access. MDN and the Firefox schema: block and allow need no host permissions, `initiatorDomains` is supported, and `tabIds` is supported for session rules only.
 
-### 2.1 Chromium Browsers (Chrome, Edge, Brave, Opera)
-- **Strengths**: Full support for Manifest V3 Declarative Net Request, in-memory `chrome.storage.session`, native `content-visibility: auto`, and `performance.memory` telemetry.
-- **Brave**: Brave's built-in Shields fingerprinting protections may randomize or cap `navigator.hardwareConcurrency` and `deviceMemory`. The Adaptive Engine gracefully defaults to conservative thresholds if values are masked.
+## Known compatibility issues
 
-### 2.2 Mozilla Firefox (Gecko Engine)
-- **Memory Metric**: Firefox intentionally does not expose `performance.memory` to prevent micro-architectural side-channel attacks (e.g. Spectre). The Performance Dashboard honestly marks memory as `"Restricted by browser API"` without faking data.
-- **Content Visibility**: As of current versions, Gecko does not fully implement CSS `content-visibility: auto`. The DOM optimization module verifies CSS property support before applying, causing no visual errors.
+* **Firefox host access.** Firefox has treated host access for content scripts as something users may need to grant. If nothing happens on pages, check the extension's permissions in `about:addons`. Needs verification per Firefox version.
+* **Firefox add-on id** in `manifest/firefox.json` is a placeholder.
+* **Safari** needs `xcrun safari-web-extension-converter dist/chromium` and an Xcode project. Not done. Expect to re-verify rule support, session rules and `storage.session`.
+* **`content-visibility`** applies containment that can clip overflowing content or change positioning of fixed descendants. The module skips obvious risks but cannot detect all of them. Disable the DOM module for a site if layout breaks.
+* **Autoplay guard** pauses any video that starts before interaction, including intentional muted hero loops. Clicking a paused control-less video starts it.
+* **Lazy loading** cannot cancel loads that already started.
+* **Pause on this tab and Before/after reload the page.** Unsaved input is lost.
+* **Sites that gate on analytics tags** may behave differently when those requests are blocked. Use Skip this site.
 
-### 2.3 Apple Safari (WebKit)
-- **Declarative Net Request**: WebKit enforces strict rule count limits on dynamic rules. The network adapter manages dynamic domain exemptions defensively to stay within WebKit quotas.
-- **Session Storage**: If `chrome.storage.session` is unavailable in older WebKit extension builds, the extension automatically falls back to an in-memory runtime cache that is cleared upon tab closure.
+## Manual test checklist (not yet performed)
 
----
+For each browser:
 
-## 3. Graceful Degradation Principles
-- **No Crash Guarantee**: Every experimental or platform-specific Web API (`deviceMemory`, `connection`, `getBattery`, `performance.memory`) is wrapped in safety checks (`if ('api' in object)`).
-- **Honest Dashboards**: When an API is unexposed by the host browser, the UI explicitly indicates `"Unexposed by browser"` or `"Restricted"` rather than generating synthetic measurements.
-
+1. Load the build. Confirm no manifest errors and that the popup and dashboard open.
+2. Visit a heavy news page. Confirm the popup shows OPTIMIZED, and (Chromium) a blocked-request count.
+3. Open the same page with **Pause on this tab**. Confirm the page reloads without changes and trackers load.
+4. Add the site to the skip list. Confirm status SKIPPED and that blocked requests stop.
+5. Sign-in page with a password field: confirm status OFF and no changes. Test a checkout and a CAPTCHA page.
+6. Run **Before and after** on three sites. Confirm both reloads occur and the table shows only measured rows.
+7. Add a custom rule for a test host. Confirm it blocks there and cannot be added for stripe.com.
+8. Master switch off: confirm all tabs revert and no requests are blocked.
+9. Close a tab and the browser. Confirm settings reset on restart.
+10. Profile a heavy page with the browser's performance tools with and without the extension. Record the extension's own main-thread time.
+11. Inspect the service worker or event page for network activity: there must be none.

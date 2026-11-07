@@ -1,120 +1,79 @@
-# System Architecture Specification
+# Architecture
 
-## Universal Website Performance Optimizer
-
-This document details the internal design, modular pipelines, safety protocols, and cross-browser adapters of the **Universal Website Performance Optimizer**.
-
----
-
-## 1. High-Level Architecture (Single Source of Truth)
-
-The extension uses a consolidated, unified architecture where `src/` modules act as the single source of truth across both the background service worker and content scripts, without duplicate or disconnected codebases.
+## Runtime map
 
 ```
-+---------------------------------------------------------------------------------------+
-|                                    BROWSER RUNTIME                                     |
-+---------------------------------------------------------------------------------------+
-                                           |
-                                           v
-+---------------------------------------------------------------------------------------+
-| BACKGROUND SERVICE WORKER (entrypoints/background.js - type: module)                  |
-|  - Imports directly from src/ (session-manager.js, net-request-adapter.js, etc.)      |
-|  - Declarative Net Request Orchestrator (Static DNR + Dynamic Exemption & Custom Rules)|
-|  - Session State Controller (tab-bound in-memory cache, auto-cleared on tabs.onRemoved)|
-|  - Global Config Broadcaster (broadcastMessage propagates updates to all active tabs)  |
-+---------------------------------------------------------------------------------------+
-            ^                                           ^
-            | (chrome.runtime.sendMessage)               | (chrome.runtime.sendMessage)
-            v                                           v
-+--------------------------------+         +--------------------------------------------+
-| POPUP / OPTIONS DASHBOARD      |         | CONTENT SCRIPT (entrypoints/content.js)    |
-|  - type: module                |         |  - Sequentially loads src/ modules into     |
-|  - Imports directly from src/  |         |    content isolated world                  |
-|  - Live Genuine Telemetry      |         |  - Optimizer Core Orchestrator             |
-|  - Module Toggles & Sliders    |         |  - Safety & Sensitive Form Guard           |
-|  - Dynamic Domain Allowlist    |         |  - 8 Modular Subsystems                    |
-|  - Custom Block Rules Engine   |         |  - Native W3C Metrics Collector            |
-+--------------------------------+         +--------------------------------------------+
-                                                        |
-                                                        v
-                                           +----------------------------+
-                                           | HOST WEBPAGE DOM & RUNTIME |
-                                           |  - CSS Injections          |
-                                           |  - Image / Video Controls  |
-                                           |  - Mutation Observers      |
-                                           |  - Beacon Interceptor      |
-                                           +----------------------------+
+popup / dashboard (src/ui)  --SET_CONFIG, TAB_PAUSE, ...-->  background (src/background)
+content script (src/content) --GET_PLAN, REPORT_SAMPLE, SAFETY_TRIP-->  background
+background --PLAN_CHANGED, RESTORE_NOW, SAMPLE_NOW-->  content script
+background --declarativeNetRequest-->  the browser's network stack
 ```
 
----
+There is one runtime implementation. Four bundles are built from `src/`: `background.js`, `content.js`, `popup/popup.js`, `options/options.js`. All are classic scripts (IIFE). The earlier version listed ES modules as content scripts, which browsers cannot load.
 
-## 2. Core Subsystems
+## Modules
 
-### 2.1 Safety & Compatibility Engine (`src/safety/`)
-- **Safety Manager (`safety-manager.js`)**: Evaluates candidate hostnames and paths prior to applying any optimization.
-  - Normalizes input hostnames by stripping protocol, path, port, and trailing slashes.
-  - Strict domain matching: matches exact domains and subdomains (`app.example.com` matches `example.com`), `localhost`, and `127.0.0.1`.
-  - Intercepts sensitive pathways via regex: `/login`, `/auth`, `/checkout`, `/pay`, `/2fa`, etc.
-  - Detects password fields (`input[type="password"]`) and payment input elements (`autocomplete="cc-number"`). If present, optimization switches to high-safety bypass.
-- **Emergency Switch (`emergency-switch.js`)**: Provides instantaneous teardown:
-  - Immediately removes injected stylesheets (`#uwpo-optimized-rendering-stylesheet`).
-  - Disconnects all active observers (`MutationObserver`, `IntersectionObserver`, `PerformanceObserver`).
-  - Restores overridden APIs (`navigator.sendBeacon`).
-  - Restores paused media elements.
+| Path | Role |
+| --- | --- |
+| `shared/types.ts`, `config.ts` | Types, defaults, deep sanitization of every incoming config |
+| `shared/measure.ts` | The Measurement type (measured, estimated with method, unavailable with reason) |
+| `shared/tracker-list.ts` | Single source of bundled block lists, essential hosts, rule ids and priorities |
+| `safety/` | Host normalization, allowlist matching, essential paths and hosts, custom rule grammar |
+| `adaptive/decide.ts` | Pure adaptive decision with documented thresholds |
+| `policy/resolve.ts`, `edit.ts` | Precedence resolver and pure config edits |
+| `adapters/` | Browser adapter (feature detection), network plan builder, network applier |
+| `background/` | Session state, request handlers, entry |
+| `content/` | Controller, shared DOM watcher, modules (images, videos, rendering, dom), sampler |
+| `metrics/` | Comparison and display formatting |
+| `ui/` | Popup and dashboard |
 
-### 2.2 Adaptive Engine (`src/adaptive-engine/`)
-- **Device Detector (`device-detector.js`)**: Gathers hardware signals locally without synthetic figures:
-  - `navigator.hardwareConcurrency`
-  - `navigator.deviceMemory` (GB, where exposed by Chromium)
-  - `navigator.connection` (`effectiveType`, `saveData`)
-  - Battery level and charging status via `navigator.getBattery()`.
-- **Workload Analyzer (`workload-analyzer.js`)**: Monitors live DOM complexity (node count, script density, stylesheet count) and observes long tasks (>50ms) using `PerformanceObserver`.
-- **Profile Evaluator (`profile-evaluator.js`)**: Maps device capabilities and live workload to one of four operating profiles:
-  1. **Balanced**: Standard safe default (lazy loading, autoplay suppression, non-destructive animation capping, tracker blocking). Preserves backdrop blur, shadows, and filters.
-  2. **Performance**: Enhanced safe throttling (longer timer delay, box-shadow reduction, stricter script blocking).
-  3. **Extreme Lite**: Aggressive resource conservation for low-end devices (pause all offscreen media, disable transitions/blur/shadows, throttle timers to 5000ms).
-  4. **Adaptive Custom**: Dynamically shifts between modes based on real-time hardware telemetry and DOM complexity.
+## Precedence
 
-### 2.3 Optimization Modules (`src/modules/`)
-1. **CPU Efficiency (`cpu-optimizer.js`)**:
-   - Monitors `document.visibilityState` to reduce background page activity.
-   - Observes HTML5 `<canvas>` elements with `IntersectionObserver` to halt offscreen rendering loops.
-   - Disconnects all observers and event listeners on teardown.
-2. **Memory Leak Prevention (`memory-optimizer.js`)**:
-   - Central registry for all observers.
-   - Employs `WeakSet` to track processed DOM nodes without leaking strong references.
-   - Cleans up Performance Resource Timing buffers periodically.
-   - Hooks into `window.pagehide` and `window.beforeunload` for guaranteed teardown.
-3. **Script Blocker (`script-blocker.js`)**:
-   - Content-script level defense that inspects injected `<script>` nodes.
-   - Blocks known bloatware (Hotjar, FullStory, CrazyEgg, Mouseflow, Clarity, TikTok Pixel, Facebook Pixel, etc.).
-   - Explicitly protects authentication and payment scripts (Stripe, PayPal, Turnstile, reCAPTCHA, Auth0).
-   - Intercepts `navigator.sendBeacon` calls destined for analytics endpoints.
-4. **Image Optimizer (`image-optimizer.js`)**:
-   - Dynamically injects `loading="lazy"` and `decoding="async"` on below-the-fold images.
-   - Ensures `aspect-ratio` consistency to prevent Cumulative Layout Shift (CLS).
-   - Zero downloading or caching of external image replacements.
-5. **Video Optimizer (`video-optimizer.js`)**:
-   - Strips unprompted `autoplay` and caps `preload="metadata"`.
-   - Pauses offscreen video streams using `IntersectionObserver`.
-   - Pauses muted background playback when tabs lose visibility.
-   - Restores paused videos on teardown.
-6. **Rendering Optimizer (`rendering-optimizer.js`)**:
-   - Injects targeted CSS rules into `document.documentElement`.
-   - Conservative in Balanced mode (only caps infinite loops on decorative classes).
-   - In Extreme mode, disables expensive GPU filters and backdrop blur.
-   - Respects `prefers-reduced-motion`.
-7. **Network Optimizer (`network-optimizer.js`)**:
-   - Tracks total resource requests and data transferred via `PerformanceResourceTiming`.
-   - Calculates verified savings from blocked requests with transparent `(est.)` labeling.
-8. **DOM Optimizer (`dom-optimizer.js`)**:
-   - Applies conservative `content-visibility: auto` to offscreen content containers (`article`, `section`, `footer`).
-   - Excludes any container holding interactive forms, headers, or navigation elements.
+`resolveEffective` applies, in order: global settings, site override (longest matching hostname), adaptive level, safety. The first three decide what would run; safety decides whether anything may run, and wins. The adaptive step can only choose a level, never enable a disabled module.
 
-### 2.4 Hybrid Network Blocking & Session Architecture
-- **Declarative Net Request Adapter (`net-request-adapter.js`)**:
-  - Toggles static ruleset (`default_performance_rules`).
-  - Manages dynamic allowlist domain exemptions (Priority 100).
-  - Manages dynamic custom block patterns (Priority 20).
-  - Automatically purges dynamic rules on emergency reset and startup to guarantee session-only isolation.
-- **Session Manager (`session-manager.js`)**: Binds state to active tab IDs. Automatically purges data when tabs close (`tabs.onRemoved`) and when the browser session terminates.
+The background resolves everything it can know (settings, hostname, path, master switch, allowlist, tab pause). The content script adds what only the page can know: device and page signals for the adaptive level, and sensitive elements. A page-level safety trip rolls back all changes, and the background then adds a tab-scoped network bypass.
+
+## Network
+
+Static rulesets (`replay`, `analytics`, `ads`, `essential`) are generated at build time from `tracker-list.ts`. User state (skip list, per-tab bypass, custom rules) is applied as **session rules**, which the browser clears at shutdown. If session rules are unavailable the adapter falls back to dynamic rules and reports that they persist until the next startup reconcile.
+
+Priority ladder, highest first: user allow (100: skip list, built-in protected hosts, tab bypass), essential allow (10: auth, payment, CAPTCHA providers), custom block (5), bundled block (1). No user or bundled block can therefore override an essential provider, and the user can always switch blocking off per site or per tab.
+
+Network applies are serialized through a promise chain.
+
+## Messaging and security
+
+* The browser only delivers messages from this extension's own contexts (no `externally_connectable`).
+* `parseRequest` validates every message. `classifySender` accepts only our extension id, extension pages by URL prefix, and top-frame content scripts.
+* Content scripts may send only `GET_PLAN`, `REPORT_SAMPLE`, `SAFETY_TRIP`. Anything that changes configuration or tab state requires an extension page.
+* Samples from content scripts are re-validated (finite numbers, bounded strings, estimates must carry a method).
+* All configuration, whatever its origin, goes through `sanitizeConfig` (bounded lists, hostnames normalized, prototype-pollution safe).
+* Custom rules use a narrow grammar anchored to a hostname. They compile to declarativeNetRequest `urlFilter` values, which are not regular expressions, so there is no regex-denial-of-service path. Rules cannot target file names, IPs, bare suffixes, essential providers or page navigations.
+* UI code writes text with `textContent`; no HTML is parsed from data.
+
+## Content pipeline and self-overhead
+
+* One shared `MutationObserver` serves all modules. Its callback only queues added elements.
+* Work runs in idle time in slices of at most 8 ms, so a slice cannot become a long task.
+* The queue is capped at 2000; on overflow it falls back to a single full rescan.
+* The observer is disconnected while the tab is hidden, with one rescan when it becomes visible.
+* After 1000 ms of cumulative own work the watcher stops (self-limited, reported in the popup).
+* Measurement uses buffered observers that are read once and disconnected. There is no polling in the page, and none in the popup except a bounded poll while a user-started comparison runs.
+* Time spent in the extension's callbacks is measured and displayed as "Extension time" (a lower bound; it excludes browser-internal observer delivery cost).
+* These budgets are design limits, not measured guarantees. They have not been profiled in a real browser.
+
+## Lifecycle and cleanup
+
+Each module owns its listeners, observers and timers through `Disposer` and implements `stop()` as a full undo. Attributes the extension adds are marked, and removed on restore only if the page has not changed them since. Previous inline styles are saved and restored, and empty `style` attributes are not left behind. The controller restores on plan change, safety trip, tab pause, master switch off and page hide. Tests compare the page HTML before and after.
+
+## State
+
+`storage.session` (memory-backed, cleared at browser exit, survives background restarts) holds the configuration and, per open tab, hostname, bypass flag, latest sample and comparison. Records are deleted when the tab closes. If `storage.session` is missing, state stays in memory only.
+
+## Before/after comparison
+
+`COMPARE_START` marks the tab, adds a tab-scoped allow rule, and reloads with cache bypass. The baseline page load reports an unoptimized sample; the background re-arms blocking, reloads again, and the optimized load reports. A comparison fails cleanly if the site changes, the baseline turns out to be optimized, or the optimizer is inactive. Only metrics measured in both runs are compared.
+
+## Build
+
+`scripts/build.mjs` bundles with esbuild, generates static rulesets and PNG icons (Chromium rejects SVG manifest icons), writes per-browser manifests, and validates: manifest references exist, rule ids are unique, bundles contain no module syntax.

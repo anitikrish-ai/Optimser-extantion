@@ -1,31 +1,21 @@
 {
   "name": "universal-website-performance-optimizer",
-  "version": "1.0.0",
-  "description": "Universal browser extension that intelligently reduces website resource consumption on low-end devices with 100% local-first privacy.",
+  "version": "1.1.0",
+  "description": "Local-only browser extension that reduces avoidable website resource use. No telemetry, no backend, session-only state.",
   "type": "module",
   "private": true,
-  "scripts": {
-    "dev": "wxt",
-    "build": "wxt build",
-    "compile": "tsc --noEmit",
-    "test": "node --test tests/*.test.js",
-    "zip": "wxt zip"
-  },
-  "keywords": [
-    "browser-extension",
-    "performance-optimizer",
-    "low-end-devices",
-    "memory-reduction",
-    "cpu-efficiency",
-    "lazy-loading",
-    "privacy-first"
-  ],
-  "author": "Open Source Community",
   "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/test.mjs",
+    "check": "npm run typecheck && npm test && npm run build"
+  },
   "devDependencies": {
-    "@types/chrome": "^0.0.280",
-    "typescript": "^5.4.5",
-    "wxt": "^0.19.0"
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.25.0",
+    "jsdom": "^31.0.0",
+    "typescript": "^5.6.0"
   }
 }
-
