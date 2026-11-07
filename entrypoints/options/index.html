@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Universal Performance Optimizer - Advanced Dashboard</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>
+        </svg>
+        <div>
+          <h1 class="sidebar-title">Optimizer Core</h1>
+          <span class="sidebar-version">v1.0.0 Production</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#overview" class="nav-item active" data-tab="overview">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          <span>Overview & Hardware</span>
+        </a>
+        <a href="#modules" class="nav-item" data-tab="modules">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span>Optimization Modules</span>
+        </a>
+        <a href="#allowlist" class="nav-item" data-tab="allowlist">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <span>Safety & Allowlist</span>
+        </a>
+        <a href="#custom-rules" class="nav-item" data-tab="custom-rules">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="4" y1="21" x2="4" y2="14"/>
+            <line x1="4" y1="10" x2="4" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12" y2="3"/>
+            <line x1="20" y1="21" x2="20" y2="16"/>
+            <line x1="20" y1="12" x2="20" y2="3"/>
+          </svg>
+          <span>Custom Rules</span>
+        </a>
+        <a href="#privacy" class="nav-item" data-tab="privacy">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span>Privacy & Session</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="privacy-badge">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+          <span>Zero Telemetry Verified</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Section: Overview & Hardware -->
+      <section id="tab-overview" class="content-tab active">
+        <div class="page-header">
+          <h2>Overview & Device Diagnostics</h2>
+          <p class="page-subtitle">Automatic hardware analysis for real-time workload tuning.</p>
+        </div>
+
+        <div class="cards-grid">
+          <div class="glass-card">
+            <div class="card-header">
+              <span class="card-title">Device Capabilities</span>
+              <span class="badge" id="diag-device-type">Detecting...</span>
+            </div>
+            <div class="diag-list">
+              <div class="diag-row">
+                <span class="diag-key">CPU Cores</span>
+                <span class="diag-val" id="diag-cpu-cores">--</span>
+              </div>
+              <div class="diag-row">
+                <span class="diag-key">Device RAM</span>
+                <span class="diag-val" id="diag-memory">--</span>
+              </div>
+              <div class="diag-row">
+                <span class="diag-key">Platform</span>
+                <span class="diag-val" id="diag-platform">--</span>
+              </div>
+              <div class="diag-row">
+                <span class="diag-key">Network Type</span>
+                <span class="diag-val" id="diag-network">--</span>
+              </div>
+              <div class="diag-row">
+                <span class="diag-key">Battery Status</span>
+                <span class="diag-val" id="diag-battery">--</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="card-header">
+              <span class="card-title">Adaptive Engine Mode</span>
+              <span class="badge active" id="overview-mode-badge">BALANCED</span>
+            </div>
+            <p class="card-desc">Automatically adjusts visual fidelity, timer frequencies, and media preloading based on hardware constraints.</p>
+            <div class="select-group">
+              <label for="select-global-mode">Global Optimization Intensity:</label>
+              <select id="select-global-mode" class="form-select">
+                <option value="balanced">Balanced (Recommended Default)</option>
+                <option value="performance">Performance (Stronger Safe)</option>
+                <option value="extreme">Extreme Lite (Maximum Responsiveness)</option>
+                <option value="adaptive_custom">Adaptive Custom (Auto-adjust to device)</option>
+              </select>
+            </div>
+            <div class="toggle-row mt-12">
+              <label class="checkbox-label">
+                <input type="checkbox" id="check-auto-adaptive" checked>
+                <span>Automatically escalate intensity when low hardware is detected</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Optimization Modules -->
+      <section id="tab-modules" class="content-tab">
+        <div class="page-header">
+          <h2>Independent Optimization Modules</h2>
+          <p class="page-subtitle">Configure each resource subsystem with independent controls and compatibility safeguards.</p>
+        </div>
+
+        <div class="modules-stack">
+          <!-- CPU Module -->
+          <div class="glass-card module-card">
+            <div class="module-header">
+              <div class="module-title-wrap">
+                <h3>CPU Efficiency</h3>
+                <span class="module-desc">Reduces background activity and expensive timer thrashing</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="cfg-cpu-enabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="module-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-cpu-timers" checked>
+                <span>Throttle timer loops when tab is in background</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-cpu-canvas" checked>
+                <span>Pause off-screen HTML5 canvases</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-cpu-scroll" checked>
+                <span>Throttle high-frequency scroll event listeners</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- JavaScript & Trackers -->
+          <div class="glass-card module-card">
+            <div class="module-header">
+              <div class="module-title-wrap">
+                <h3>JavaScript & Bloatware</h3>
+                <span class="module-desc">Blocks unnecessary third-party telemetry, trackers and heavy replay scripts</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="cfg-scripts-enabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="module-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-scripts-trackers" checked>
+                <span>Block known heavy ad trackers and analytics beacons</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-scripts-replay" checked>
+                <span>Block session recording scripts (Hotjar, FullStory, CrazyEgg)</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-scripts-protect" checked disabled>
+                <span>Strictly protect essential scripts (reCAPTCHA, Turnstile, Stripe, PayPal)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Images Module -->
+          <div class="glass-card module-card">
+            <div class="module-header">
+              <div class="module-title-wrap">
+                <h3>Image Overhead</h3>
+                <span class="module-desc">Enforces native lazy-loading and off-screen loading controls</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="cfg-images-enabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="module-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-images-lazy" checked>
+                <span>Enforce native lazy loading on below-the-fold images</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-images-async" checked>
+                <span>Enforce asynchronous image decoding to avoid UI hitching</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Videos Module -->
+          <div class="glass-card module-card">
+            <div class="module-header">
+              <div class="module-title-wrap">
+                <h3>Video Playback & Autoplay</h3>
+                <span class="module-desc">Controls video streams, background playback and preview loops</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="cfg-videos-enabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="module-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-videos-autoplay" checked>
+                <span>Prevent unprompted autoplay and pre-buffering</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-videos-offscreen" checked>
+                <span>Pause video playback when element scrolls out of viewport</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-videos-bg" checked>
+                <span>Halt muted video loops when tab is in background</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Rendering & CSS Module -->
+          <div class="glass-card module-card">
+            <div class="module-header">
+              <div class="module-title-wrap">
+                <h3>Rendering & Visual Effects</h3>
+                <span class="module-desc">Reduces expensive GPU filters, blur and infinite animations</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="cfg-rendering-enabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="module-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-rendering-anim" checked>
+                <span>Cap infinite CSS keyframe animations</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-rendering-filters" checked>
+                <span>Disable expensive CSS graphical filters</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-rendering-blur" checked>
+                <span>Disable backdrop-filter blur on translucent containers</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-rendering-motion" checked>
+                <span>Enforce system reduced motion preference</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- DOM & Visibility -->
+          <div class="glass-card module-card">
+            <div class="module-header">
+              <div class="module-title-wrap">
+                <h3>DOM & Layout Engine</h3>
+                <span class="module-desc">Applies conservative rendering visibility to below-fold content</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="cfg-dom-enabled" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="module-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-dom-visibility" checked>
+                <span>Apply content-visibility: auto to below-the-fold content sections</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="cfg-dom-batch" checked>
+                <span>Batch DOM mutations to prevent layout thrashing</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Safety & Allowlist -->
+      <section id="tab-allowlist" class="content-tab">
+        <div class="page-header">
+          <h2>Safety & Domain Allowlist</h2>
+          <p class="page-subtitle">Domains on this list run completely unhindered with all optimizations bypassed.</p>
+        </div>
+
+        <div class="glass-card">
+          <div class="allowlist-input-row">
+            <input type="text" id="input-new-domain" class="form-input" placeholder="e.g. mybank.com or app.internal.net">
+            <button class="btn btn-primary" id="btn-add-domain">Add Domain</button>
+          </div>
+
+          <div class="allowlist-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Domain / Hostname</th>
+                  <th>Category</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="allowlist-tbody">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Custom Rules -->
+      <section id="tab-custom-rules" class="content-tab">
+        <div class="page-header">
+          <h2>Custom Network Block Rules</h2>
+          <p class="page-subtitle">Add custom URL substrings or regex patterns to block heavy resources.</p>
+        </div>
+
+        <div class="glass-card">
+          <div class="allowlist-input-row">
+            <input type="text" id="input-new-rule" class="form-input" placeholder="e.g. tracking-script.js or adservice.com">
+            <button class="btn btn-primary" id="btn-add-rule">Add Block Pattern</button>
+          </div>
+
+          <ul class="custom-rules-list" id="custom-rules-ul">
+            <!-- Populated dynamically -->
+          </ul>
+        </div>
+      </section>
+
+      <!-- Section: Privacy & Session -->
+      <section id="tab-privacy" class="content-tab">
+        <div class="page-header">
+          <h2>Privacy Guarantees & Session State</h2>
+          <p class="page-subtitle">Strict local-first architecture with zero external servers, telemetries, or persistent trackers.</p>
+        </div>
+
+        <div class="glass-card">
+          <h3>Local-First Architecture</h3>
+          <p class="privacy-statement">
+            Universal Website Performance Optimizer operates 100% locally within your browser. It does not collect browsing history, transmit telemetry, communicate with external servers, or store persistent tracking identifiers. All tab states are bound strictly to your temporary browsing session and are erased when tabs close.
+          </p>
+
+          <div class="reset-actions mt-16">
+            <button class="btn btn-danger" id="btn-purge-session">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+              <span>Purge All Session State Now</span>
+            </button>
+            <button class="btn btn-secondary" id="btn-reset-defaults">
+              <span>Restore Factory Defaults</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
+

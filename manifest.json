@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "Universal Website Performance Optimizer",
+  "version": "1.0.0",
+  "description": "Intelligently reduces website CPU, memory, network, and rendering overhead on low-end devices with 100% local-first privacy.",
+  "permissions": [
+    "storage",
+    "declarativeNetRequest",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "entrypoints/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["entrypoints/content.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_popup": "entrypoints/popup/index.html",
+    "default_title": "Universal Performance Optimizer",
+    "default_icon": "assets/icons/icon.svg"
+  },
+  "options_ui": {
+    "page": "entrypoints/options/index.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "16": "assets/icons/icon.svg",
+    "32": "assets/icons/icon.svg",
+    "48": "assets/icons/icon.svg",
+    "128": "assets/icons/icon.svg"
+  },
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "default_performance_rules",
+        "enabled": true,
+        "path": "rules/default-rules.json"
+      }
+    ]
+  }
+}
