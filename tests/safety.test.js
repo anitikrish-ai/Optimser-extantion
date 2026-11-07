@@ -1,66 +1,44 @@
 /**
  * Universal Website Performance Optimizer
  * Safety & Allowlist Test Suite (Node.js Test Runner)
+ * Tests the actual SafetyManager implementation from src/
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { safetyManager } from '../src/safety/safety-manager.js';
 
-const ESSENTIAL_PATH_PATTERNS = [
-  /\/login/i, /\/signin/i, /\/signup/i, /\/auth/i, /\/oauth/i, /\/sso/i,
-  /\/2fa/i, /\/mfa/i, /\/checkout/i, /\/cart/i, /\/payment/i, /\/billing/i, /\/pay\//i
-];
+test('SafetyManager: allowlist accurately identifies exact domains and subdomains', () => {
+  const allowlist = ['mybank.com', 'localhost', 'accounts.google.com', 'https://secure.pay.net:8080/path'];
 
-const ESSENTIAL_SCRIPT_PATTERNS = [
-  /recaptcha/i, /turnstile/i, /hcaptcha/i, /stripe\.com/i,
-  /paypal\.com/i, /braintree/i, /checkout/i, /auth0/i
-];
+  assert.equal(safetyManager.isDomainAllowlisted('mybank.com', allowlist), true);
+  assert.equal(safetyManager.isDomainAllowlisted('online.mybank.com', allowlist), true);
+  assert.equal(safetyManager.isDomainAllowlisted('localhost', allowlist), true);
+  assert.equal(safetyManager.isDomainAllowlisted('accounts.google.com', allowlist), true);
+  assert.equal(safetyManager.isDomainAllowlisted('secure.pay.net', allowlist), true);
 
-function isDomainAllowlisted(hostname, allowlist) {
-  if (!hostname || !allowlist) return false;
-  const cleanHost = hostname.toLowerCase().trim();
-  return allowlist.some(item => {
-    const cleanItem = item.toLowerCase().trim();
-    return cleanHost === cleanItem || cleanHost.endsWith('.' + cleanItem) || cleanHost === 'localhost' || cleanHost === '127.0.0.1';
-  });
-}
-
-function isEssentialFlow(url) {
-  return ESSENTIAL_PATH_PATTERNS.some(p => p.test(url));
-}
-
-function isEssentialScript(src) {
-  return ESSENTIAL_SCRIPT_PATTERNS.some(p => p.test(src));
-}
-
-test('Allowlist accurately identifies exact domains and subdomains', () => {
-  const allowlist = ['mybank.com', 'localhost', 'accounts.google.com'];
-
-  assert.equal(isDomainAllowlisted('mybank.com', allowlist), true);
-  assert.equal(isDomainAllowlisted('online.mybank.com', allowlist), true);
-  assert.equal(isDomainAllowlisted('localhost', allowlist), true);
-  assert.equal(isDomainAllowlisted('accounts.google.com', allowlist), true);
-  assert.equal(isDomainAllowlisted('othergoogle.com', allowlist), false);
-  assert.equal(isDomainAllowlisted('randomblog.org', allowlist), false);
+  // Loose matches must never pass
+  assert.equal(safetyManager.isDomainAllowlisted('notmybank.com', allowlist), false);
+  assert.equal(safetyManager.isDomainAllowlisted('othergoogle.com', allowlist), false);
+  assert.equal(safetyManager.isDomainAllowlisted('randomblog.org', allowlist), false);
 });
 
-test('Essential flow detector correctly matches authentication and checkout paths', () => {
-  assert.equal(isEssentialFlow('https://shop.example.com/checkout/step2'), true);
-  assert.equal(isEssentialFlow('https://portal.example.com/login?redirect=dashboard'), true);
-  assert.equal(isEssentialFlow('https://sso.company.com/oauth/authorize'), true);
-  assert.equal(isEssentialFlow('https://app.example.com/user/billing'), true);
-  assert.equal(isEssentialFlow('https://news.example.com/articles/2026/tech-review'), false);
+test('SafetyManager: essential flow detector matches authentication and checkout paths', () => {
+  assert.equal(safetyManager.isEssentialFlow('https://shop.example.com/checkout/step2'), true);
+  assert.equal(safetyManager.isEssentialFlow('https://portal.example.com/login?redirect=dashboard'), true);
+  assert.equal(safetyManager.isEssentialFlow('https://sso.company.com/oauth/authorize'), true);
+  assert.equal(safetyManager.isEssentialFlow('https://app.example.com/user/billing'), true);
+  assert.equal(safetyManager.isEssentialFlow('https://news.example.com/articles/2026/tech-review'), false);
 });
 
-test('Essential script detector never flags authentication, CAPTCHA, or payment providers', () => {
-  assert.equal(isEssentialScript('https://challenges.cloudflare.com/turnstile/v0/api.js'), true);
-  assert.equal(isEssentialScript('https://www.google.com/recaptcha/api.js'), true);
-  assert.equal(isEssentialScript('https://js.stripe.com/v3/'), true);
-  assert.equal(isEssentialScript('https://www.paypal.com/sdk/js?client-id=test'), true);
-  assert.equal(isEssentialScript('https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js'), true);
+test('SafetyManager: essential script detector protects CAPTCHA, authentication, and payment providers', () => {
+  assert.equal(safetyManager.isEssentialScript('https://challenges.cloudflare.com/turnstile/v0/api.js'), true);
+  assert.equal(safetyManager.isEssentialScript('https://www.google.com/recaptcha/api.js'), true);
+  assert.equal(safetyManager.isEssentialScript('https://js.stripe.com/v3/'), true);
+  assert.equal(safetyManager.isEssentialScript('https://www.paypal.com/sdk/js?client-id=test'), true);
+  assert.equal(safetyManager.isEssentialScript('https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js'), true);
 
-  // Trackers must return false
-  assert.equal(isEssentialScript('https://static.hotjar.com/c/hotjar-123.js'), false);
-  assert.equal(isEssentialScript('https://fullstory.com/s/fs.js'), false);
+  // Bloatware must return false
+  assert.equal(safetyManager.isEssentialScript('https://static.hotjar.com/c/hotjar-123.js'), false);
+  assert.equal(safetyManager.isEssentialScript('https://fullstory.com/s/fs.js'), false);
 });
-

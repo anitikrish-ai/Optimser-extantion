@@ -1,30 +1,12 @@
 /**
  * Universal Website Performance Optimizer
  * Bloatware & Tracker Rule Pattern Matching Tests
+ * Tests actual BLOATWARE_SCRIPT_PATTERNS from src/
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-
-const BLOATWARE_SCRIPT_PATTERNS = [
-  /hotjar\.com/i,
-  /fullstory\.com/i,
-  /crazyegg\.com/i,
-  /mouseflow\.com/i,
-  /clarity\.ms/i,
-  /doubleclick\.net/i,
-  /google-analytics\.com\/analytics\.js/i,
-  /google-analytics\.com\/g\/collect/i,
-  /googletagservices\.com/i,
-  /connect\.facebook\.net\/.*\/fbevents\.js/i,
-  /analytics\.tiktok\.com/i,
-  /criteo\.net/i,
-  /outbrain\.com/i,
-  /taboola\.com/i,
-  /scorecardresearch\.com/i,
-  /adroll\.com/i,
-  /yandex\.ru\/metrika/i
-];
+import { BLOATWARE_SCRIPT_PATTERNS } from '../src/shared/constants.js';
 
 function isBloatware(url) {
   return BLOATWARE_SCRIPT_PATTERNS.some((pattern) => pattern.test(url));
@@ -50,4 +32,3 @@ test('Legitimate scripts are never matched by bloatware patterns', () => {
   assert.equal(isBloatware('https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js'), false);
   assert.equal(isBloatware('https://app.mysite.com/assets/index-D7b39.js'), false);
 });
-

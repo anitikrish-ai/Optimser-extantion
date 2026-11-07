@@ -18,7 +18,29 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["entrypoints/content.js"],
+      "js": [
+        "src/shared/constants.js",
+        "src/shared/logger.js",
+        "src/browser-adapters/browser-api.js",
+        "src/safety/safety-manager.js",
+        "src/safety/emergency-switch.js",
+        "src/device-detection/device-detector.js",
+        "src/device-detection/workload-analyzer.js",
+        "src/adaptive-engine/profile-evaluator.js",
+        "src/adaptive-engine/adaptive-controller.js",
+        "src/modules/cpu/cpu-optimizer.js",
+        "src/modules/memory/memory-optimizer.js",
+        "src/modules/scripts/script-blocker.js",
+        "src/modules/images/image-optimizer.js",
+        "src/modules/videos/video-optimizer.js",
+        "src/modules/rendering/rendering-optimizer.js",
+        "src/modules/network/network-optimizer.js",
+        "src/modules/dom/dom-optimizer.js",
+        "src/performance-monitor/metrics-collector.js",
+        "src/performance-monitor/stats-aggregator.js",
+        "src/core/optimizer-core.js",
+        "entrypoints/content.js"
+      ],
       "run_at": "document_start",
       "all_frames": false
     }

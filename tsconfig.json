@@ -4,6 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": true,
     "strict": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -22,4 +23,3 @@
     "wxt.config.ts"
   ]
 }
-

@@ -1,162 +1,68 @@
 /**
  * Universal Website Performance Optimizer
- * Standalone Background Service Worker
- * Native WebExtension MV3 Module
+ * Background Service Worker Entrypoint
+ * Handles cross-tab session orchestration, dynamic DNR rules, and tab lifecycle events.
  */
 
-const DEFAULT_CONFIG = {
-  masterEnabled: true,
-  mode: 'balanced',
-  autoAdaptive: true,
-  cpu: {
-    enabled: true,
-    throttleBackgroundTimers: true,
-    throttleScrollEvents: true,
-    pauseOffscreenCanvases: true,
-    maxBackgroundIntervalMs: 1000
-  },
-  memory: {
-    enabled: true,
-    enableWeakRefTracking: true,
-    cleanDetachedDomNodes: true,
-    teardownOnUnload: true,
-    periodicCleanupIntervalSec: 60
-  },
-  scripts: {
-    enabled: true,
-    blockHeavyTrackers: true,
-    blockSessionReplay: true,
-    blockTelemetryBeacons: true,
-    protectEssentialScripts: true
-  },
-  images: {
-    enabled: true,
-    enforceLazyLoading: true,
-    enforceAsyncDecoding: true,
-    deferOffscreenImages: true,
-    pauseAnimatedGifsOffscreen: true
-  },
-  videos: {
-    enabled: true,
-    blockAutoplay: true,
-    pauseOffscreenVideos: true,
-    pauseBackgroundTabVideos: true,
-    suppressVideoPreviews: true
-  },
-  rendering: {
-    enabled: true,
-    reduceCssAnimations: true,
-    disableExpensiveFilters: true,
-    disableBackdropBlur: true,
-    disableHeavyBoxShadows: false,
-    enforceReducedMotion: true
-  },
-  network: {
-    enabled: true,
-    blockKnownAdNetworks: true,
-    blockTrackingPixels: true,
-    blockThirdPartyFontsOnSlowNetwork: false,
-    customBlockPatterns: []
-  },
-  dom: {
-    enabled: true,
-    enableContentVisibilityAuto: true,
-    batchMutationObservers: true,
-    throttleSubtreeScans: true
-  },
-  safety: {
-    allowlist: [
-      'localhost',
-      '127.0.0.1',
-      'accounts.google.com',
-      'login.microsoftonline.com',
-      'appleid.apple.com',
-      'github.com/login',
-      'gitlab.com/users/sign_in',
-      'auth0.com',
-      'checkout.stripe.com',
-      'paypal.com',
-      'pay.google.com'
-    ],
-    emergencyDisabled: false,
-    protectPaymentAndAuth: true
-  }
-};
-
-const tabStates = new Map();
-let activeConfig = { ...DEFAULT_CONFIG };
-
-// Load session config if exists
-if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.session) {
-  chrome.storage.session.get(['uwpo_config_session'], (res) => {
-    if (res && res.uwpo_config_session) {
-      activeConfig = res.uwpo_config_session;
-    }
-    syncDnrRules();
-  });
-} else {
-  syncDnrRules();
-}
+import { browserApi } from '../src/browser-adapters/browser-api.js';
+import { netRequestAdapter } from '../src/browser-adapters/net-request-adapter.js';
+import { sessionManager } from '../src/session/session-manager.js';
+import { logger } from '../src/shared/logger.js';
 
 // Synchronize Declarative Net Request rules
-function syncDnrRules() {
-  if (typeof chrome === 'undefined' || !chrome.declarativeNetRequest) return;
+async function syncDnrRules(config) {
+  const shouldEnableNetworkBlocking = config.masterEnabled && config.network?.enabled && !config.safety?.emergencyDisabled;
 
-  const enable = activeConfig.masterEnabled && activeConfig.network.enabled;
-  chrome.declarativeNetRequest.updateEnabledRulesets({
-    enableRulesetIds: enable ? ['default_performance_rules'] : [],
-    disableRulesetIds: enable ? [] : ['default_performance_rules']
-  }, () => {
-    if (chrome.runtime.lastError) {
-      console.warn('[UWPO Background] DNR update notice:', chrome.runtime.lastError.message);
-    }
-  });
+  // 1. Static ruleset toggle
+  await netRequestAdapter.setRulesetEnabled(shouldEnableNetworkBlocking);
 
-  // Apply domain exemptions
-  chrome.declarativeNetRequest.getDynamicRules((rules) => {
-    const existingIds = (rules || []).filter(r => r.id >= 10000 && r.id < 20000).map(r => r.id);
-    const newRules = (activeConfig.safety.allowlist || []).map((domain, index) => ({
-      id: 10000 + index,
-      priority: 100,
-      action: { type: 'allow' },
-      condition: {
-        initiatorDomains: [domain.replace(/^https?:\/\//, '').split('/')[0]],
-        resourceTypes: ['main_frame', 'sub_frame', 'stylesheet', 'script', 'image', 'font', 'xmlhttprequest', 'ping', 'media', 'websocket', 'other']
-      }
-    }));
+  if (shouldEnableNetworkBlocking) {
+    // 2. Allowlist domain exemptions (Priority 100)
+    await netRequestAdapter.updateDomainExemptions(config.safety?.allowlist || []);
 
-    chrome.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: existingIds,
-      addRules: newRules
-    });
-  });
+    // 3. Custom user block rules (Priority 20)
+    await netRequestAdapter.updateCustomRules(config.network?.customBlockPatterns || []);
+  } else {
+    // Disarm dynamic rules on master disable or emergency stop
+    await netRequestAdapter.clearDynamicRules();
+  }
 }
 
-// Clear state when tab closes
-if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onRemoved) {
-  chrome.tabs.onRemoved.addListener((tabId) => {
-    if (tabStates.has(tabId)) {
-      tabStates.delete(tabId);
-    }
-  });
-}
+// Initialize on extension startup
+(async () => {
+  logger.info('Background Service Worker starting...');
+  const config = sessionManager.getConfig();
 
-// Central Message Listener
-if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    const tabId = sender.tab ? sender.tab.id : message.tabId;
+  // Clear previous session dynamic rules to ensure session-only privacy
+  await netRequestAdapter.clearDynamicRules();
+  await syncDnrRules(config);
+
+  logger.info('DNR rules and session configuration initialized.');
+})();
+
+// Central Message Dispatcher
+const api = browserApi.getApi();
+
+if (api.runtime?.onMessage) {
+  api.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    const tabId = sender.tab?.id ?? message.tabId;
 
     switch (message.action) {
       case 'GET_TAB_STATE': {
-        const state = tabId ? tabStates.get(tabId) : null;
-        sendResponse({ success: true, state, config: activeConfig });
+        const targetTabId = message.tabId || sender.tab?.id;
+        const config = sessionManager.getConfig();
+        if (targetTabId) {
+          const state = sessionManager.getTabState(targetTabId);
+          sendResponse({ success: true, state, config });
+        } else {
+          sendResponse({ success: true, config });
+        }
         break;
       }
 
       case 'REPORT_PAGE_METRICS': {
         if (tabId && message.payload) {
-          const current = tabStates.get(tabId) || { tabId };
-          tabStates.set(tabId, { ...current, ...message.payload, lastUpdated: Date.now() });
+          sessionManager.updateTabState(tabId, message.payload);
           sendResponse({ success: true });
         }
         break;
@@ -164,42 +70,48 @@ if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage)
 
       case 'UPDATE_CONFIG': {
         if (message.payload) {
-          activeConfig = message.payload;
-          if (chrome.storage && chrome.storage.session) {
-            chrome.storage.session.set({ uwpo_config_session: activeConfig });
-          }
-          syncDnrRules();
+          const newConfig = message.payload;
+          sessionManager.setConfig(newConfig).then(async () => {
+            // Synchronize DNR network engine
+            await syncDnrRules(newConfig);
 
-          // Forward update to active tab if provided
-          if (message.tabId) {
-            chrome.tabs.sendMessage(message.tabId, { action: 'UPDATE_CONFIG', payload: activeConfig }, () => {
-              if (chrome.runtime.lastError) { /* ignore */ }
+            // Broadcast configuration update to ALL active browser tabs
+            await browserApi.broadcastMessage({
+              action: 'UPDATE_CONFIG',
+              payload: newConfig
             });
-          }
-          sendResponse({ success: true, config: activeConfig });
+
+            sendResponse({ success: true, config: newConfig });
+          });
+          return true; // Async response
         }
         break;
       }
 
       case 'EMERGENCY_RESET': {
-        if (message.tabId) {
-          chrome.tabs.sendMessage(message.tabId, { action: 'EMERGENCY_RESET' }, () => {
-            if (chrome.runtime.lastError) { /* ignore */ }
-          });
+        const targetTabId = message.tabId || sender.tab?.id;
+        (async () => {
+          // Disarm DNR rules immediately
+          await netRequestAdapter.setRulesetEnabled(false);
+          await netRequestAdapter.clearDynamicRules();
+
+          // Dispatch emergency reset to the tab
+          if (targetTabId) {
+            await browserApi.sendTabMessage(targetTabId, { action: 'EMERGENCY_RESET' });
+          }
           sendResponse({ success: true });
-        }
-        break;
+        })();
+        return true;
       }
 
       case 'CLEAR_SESSION_STATE': {
-        tabStates.clear();
-        if (chrome.storage && chrome.storage.session) {
-          chrome.storage.session.clear();
-        }
-        activeConfig = { ...DEFAULT_CONFIG };
-        syncDnrRules();
-        sendResponse({ success: true });
-        break;
+        (async () => {
+          await sessionManager.purgeAllSessionData();
+          await netRequestAdapter.clearDynamicRules();
+          await syncDnrRules(sessionManager.getConfig());
+          sendResponse({ success: true });
+        })();
+        return true;
       }
 
       default:
@@ -210,4 +122,3 @@ if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage)
     return true;
   });
 }
-

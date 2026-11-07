@@ -262,3 +262,309 @@ Before finishing:
 IMPORTANT: I will later provide this entire project to Claude for code refinement, debugging, security review, performance improvements and UI polishing. Therefore, keep the architecture clean, files organized, documentation clear and implementation easy to understand.
 
 **FINAL PRIORITY: Real functionality > performance > compatibility > privacy > UI polish. All must be respected, but never fake a feature to make the project appear complete.**
+# REPAIR EXISTING UNIVERSAL WEBSITE PERFORMANCE OPTIMIZER
+
+You are repairing the existing Universal Website Performance Optimizer project in the current workspace.
+
+IMPORTANT:
+- Do NOT create a new project.
+- Do NOT redesign the project from scratch.
+- Preserve the existing UI, architecture and working features unless a change is required to fix them.
+- Do NOT run ANY terminal, shell, PowerShell, npm, npx, pnpm, yarn, build, install, test or deployment commands.
+- Do NOT download anything.
+- Do NOT install dependencies.
+- Work only by inspecting and editing the existing project files.
+- Do not ask me to run commands.
+- Do not claim something is tested if you cannot actually verify it.
+- Do not replace real functionality with mock/demo functionality.
+
+## MAIN PROBLEM
+
+The current project contains duplicated TypeScript and JavaScript implementations. The active extension runtime is using the JavaScript entrypoints while several TypeScript optimization modules are not actually connected to the runtime.
+
+Fix the architecture so there is ONE clear source of truth and the functionality that the UI exposes is actually connected to the active extension runtime.
+
+## REQUIRED FIXES
+
+### 1. Runtime architecture
+Inspect:
+- manifest.json
+- background entrypoint
+- content entrypoint
+- popup
+- options
+- TypeScript modules
+- browser adapters
+
+Determine exactly which files are loaded by the extension.
+
+Connect the existing TypeScript modules properly where appropriate, or consolidate duplicated implementations into one maintainable runtime.
+
+Do not leave unused duplicate implementations that create confusion.
+
+### 2. CPU optimization
+Fix the CPU module so it only claims functionality that actually exists.
+
+Implement safe browser-compatible optimization such as:
+- background activity management where APIs permit
+- visibility-aware processing
+- off-screen canvas observation
+- cleanup of extension-created observers/listeners
+- safe throttling mechanisms where technically possible
+
+Do NOT monkey-patch website timers globally unless there is a safe rollback mechanism and strong compatibility protection.
+
+Do not falsely claim that the extension can directly control arbitrary website CPU usage.
+
+### 3. Memory optimization
+Implement real extension-side memory cleanup:
+- disconnect observers
+- remove event listeners
+- clear timers
+- release references
+- clean tab/session state
+- avoid retained DOM references
+
+Do not claim that the extension can arbitrarily free the browser's website memory.
+
+### 4. JavaScript optimization
+Use safe blocking rules for genuinely unnecessary third-party resources.
+
+Protect:
+- authentication
+- login
+- payment
+- checkout
+- CAPTCHA
+- navigation
+- essential application scripts
+
+Improve the existing rule engine instead of blindly blocking JavaScript.
+
+### 5. Network blocking
+Fix the hybrid blocking engine.
+
+It must support:
+- built-in rules
+- custom rules
+- per-site exclusions
+- allowlist protection
+- browser-compatible request blocking
+- safe fallback where declarative blocking APIs aren't available
+
+Custom rules must actually affect runtime behavior.
+
+### 6. Privacy/session storage
+The project requirement is session-only operation.
+
+Fix the current dynamic-rule persistence problem.
+
+Do NOT permanently store:
+- browsing history
+- website contents
+- website profiles
+- optimization statistics
+- browsing data
+
+Use session-scoped mechanisms where supported.
+
+If a browser API cannot guarantee session-only behavior, implement a safe fallback and document it.
+
+When a tab closes, clear its temporary state.
+
+When the browser session ends, temporary configuration/state must not become permanent browsing data.
+
+### 7. Emergency reset
+Emergency reset must actually stop optimization.
+
+It must:
+- disable active content optimization
+- disable applicable blocking rules
+- restore modified page behavior where safely reversible
+- clear temporary optimization state
+
+Do not leave network blocking active after emergency reset.
+
+### 8. Allowlist
+Fix hostname matching.
+
+Allowlist entries must consistently represent hostnames/domains, not mixed URL paths.
+
+Support:
+- exact domains
+- subdomains
+- temporary per-site bypass
+- global allowlist
+
+Never accidentally allow unrelated domains because of loose string matching.
+
+### 9. Global settings
+When the user changes global configuration, ensure the configuration is correctly propagated to all relevant active tabs.
+
+Do not update only the currently selected tab when the setting is global.
+
+Per-site settings must remain separate from global settings.
+
+### 10. Adaptive engine
+Connect the adaptive engine to the actual runtime.
+
+It should determine an optimization plan using available signals such as:
+- device capabilities where detectable
+- page complexity
+- DOM size
+- resource activity
+- network conditions where available
+
+Modes:
+- Balanced
+- Performance
+- Extreme Lite
+- Adaptive Custom
+
+Balanced must remain the default.
+
+Do not invent hardware information that browser APIs cannot provide.
+
+### 11. Image optimization
+Ensure the active runtime actually implements the advertised image features:
+- safe lazy loading
+- async decoding
+- off-screen handling
+- animated image handling where safely possible
+
+Never download replacement image files.
+
+### 12. Video optimization
+Ensure actual runtime behavior supports:
+- autoplay prevention
+- off-screen pausing
+- background-tab handling where safe
+- preview reduction where possible
+
+Never break essential media controls.
+
+### 13. Rendering optimization
+Keep Balanced mode conservative.
+
+Do NOT globally destroy:
+- backdrop blur
+- filters
+- shadows
+- transitions
+- layout styling
+
+unless the optimization mode explicitly allows aggressive rendering reduction.
+
+Preserve website usability and appearance as much as possible.
+
+### 14. DOM optimization
+Keep DOM optimization conservative.
+
+Never blindly remove website elements.
+
+Use safe mechanisms such as:
+- content-visibility where appropriate
+- visibility-aware processing
+- throttled observation
+- efficient extension-side DOM scanning
+
+### 15. Performance metrics
+Remove fabricated metrics.
+
+Never hardcode:
+- FPS
+- long-task counts
+- CPU savings
+- memory savings
+- bandwidth savings
+
+If a metric cannot be measured through available browser APIs, display:
+"Unavailable"
+
+or another honest equivalent.
+
+Separate:
+- measured values
+- estimated values
+- unavailable values
+
+Clearly label estimates.
+
+### 16. Before/after comparison
+Create a truthful performance comparison system.
+
+Possible measurements:
+- resource count
+- transferred bytes
+- load timing
+- resource timing
+- long tasks where available
+- DOM metrics
+- supported memory metrics
+- responsiveness metrics where measurable
+
+Do not claim that an optimization saved a specific amount unless the measurement supports it.
+
+### 17. UI
+Preserve the current design.
+
+Fix functionality behind the controls rather than replacing the UI.
+
+Every visible control must either:
+- work,
+- be disabled with an explanation,
+- or be removed if technically impossible.
+
+No fake buttons.
+
+### 18. Browser compatibility
+Keep the architecture compatible with:
+- Chromium browsers
+- Firefox
+- Safari where extension APIs permit
+
+Use browser adapters rather than assuming Chrome-only APIs everywhere.
+
+Do not claim universal compatibility when an API is unavailable.
+
+### 19. Permissions
+Review manifest permissions.
+
+Use the minimum permissions required.
+
+Do not add unnecessary permissions.
+
+### 20. Code quality
+Clean:
+- duplicated code
+- dead code
+- contradictory implementations
+- unsafe global patches
+- memory leaks
+- unused imports
+- misleading comments
+- fake metrics
+- incomplete handlers
+
+Keep TypeScript strongly typed and modular.
+
+## FINAL REQUIREMENT
+
+After editing:
+
+1. Inspect the entire project structure.
+2. Inspect the manifest and actual runtime entrypoints.
+3. Trace every major UI control to its implementation.
+4. Trace every optimization module to its runtime usage.
+5. Remove or clearly isolate obsolete duplicate implementations.
+6. Ensure privacy requirements are reflected in the actual implementation.
+7. Ensure the README does not claim features that aren't implemented.
+8. Do NOT run commands.
+9. Do NOT claim tests passed.
+10. At the end, provide a concise list of:
+   - files changed
+   - major fixes
+   - remaining unverified areas
+   - features that still require real browser/device testing
+
+The result must be a genuinely functional repair of the existing project, not a rewritten mockup.

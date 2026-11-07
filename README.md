@@ -96,59 +96,56 @@ The extension includes built-in safeguards to prevent interference with critical
 ```
 Optimiser/
 ├── entrypoints/
-│   ├── background.ts            # WXT Background Service Worker source
-│   ├── background.js            # Standalone Manifest V3 Background Service Worker
-│   ├── content.ts               # WXT Content Script entrypoint source
-│   ├── content.js               # Standalone Content Script engine
+│   ├── background.js            # Active Service Worker (ESM, imports from src/)
+│   ├── content.js               # Active Content Script bootstrapper
 │   ├── popup/
 │   │   ├── index.html           # Liquid Glass Popup interface
 │   │   ├── popup.css            # Accessible, minimal popup styles
-│   │   ├── popup.ts             # Popup TypeScript controller
-│   │   └── popup.js             # Native Popup execution logic
+│   │   └── popup.js             # Native Popup execution logic (imports from src/)
 │   └── options/
 │       ├── index.html           # Advanced Diagnostic Dashboard
 │       ├── options.css          # Responsive dashboard styling
-│       ├── options.ts           # Options TypeScript controller
-│       └── options.js           # Native Options execution logic
+│       └── options.js           # Native Options execution logic (imports from src/)
 ├── src/
 │   ├── core/
-│   │   └── optimizer-core.ts    # Central orchestrator binding all modules
+│   │   └── optimizer-core.js    # Central orchestrator binding all modules
 │   ├── adaptive-engine/
-│   │   ├── adaptive-controller.ts
-│   │   └── profile-evaluator.ts
+│   │   ├── adaptive-controller.js
+│   │   └── profile-evaluator.js
 │   ├── device-detection/
-│   │   ├── device-detector.ts
-│   │   └── workload-analyzer.ts
+│   │   ├── device-detector.js
+│   │   └── workload-analyzer.js
 │   ├── performance-monitor/
-│   │   ├── metrics-collector.ts # Real W3C Performance API telemetry
-│   │   └── stats-aggregator.ts  # Honest metrics formatting
+│   │   ├── metrics-collector.js # Real W3C Performance API telemetry
+│   │   └── stats-aggregator.js  # Honest metrics formatting
 │   ├── modules/
-│   │   ├── cpu/cpu-optimizer.ts
-│   │   ├── memory/memory-optimizer.ts
-│   │   ├── scripts/script-blocker.ts
-│   │   ├── images/image-optimizer.ts
-│   │   ├── videos/video-optimizer.ts
-│   │   ├── rendering/rendering-optimizer.ts
-│   │   ├── network/network-optimizer.ts
-│   │   └── dom/dom-optimizer.ts
+│   │   ├── cpu/cpu-optimizer.js
+│   │   ├── memory/memory-optimizer.js
+│   │   ├── scripts/script-blocker.js
+│   │   ├── images/image-optimizer.js
+│   │   ├── videos/video-optimizer.js
+│   │   ├── rendering/rendering-optimizer.js
+│   │   ├── network/network-optimizer.js
+│   │   └── dom/dom-optimizer.js
 │   ├── safety/
-│   │   ├── safety-manager.ts
-│   │   └── emergency-switch.ts
+│   │   ├── safety-manager.js
+│   │   └── emergency-switch.js
 │   ├── browser-adapters/
-│   │   ├── browser-api.ts
-│   │   ├── storage-adapter.ts
-│   │   └── net-request-adapter.ts
+│   │   ├── browser-api.js
+│   │   ├── storage-adapter.js
+│   │   └── net-request-adapter.js
 │   ├── session/
-│   │   └── session-manager.ts
+│   │   └── session-manager.js
 │   └── shared/
-│       ├── types.ts
-│       ├── constants.ts
-│       └── logger.ts
+│       ├── types.ts             # TypeScript definitions and contracts
+│       ├── constants.js         # Safe defaults, bloatware & essential patterns
+│       └── logger.js            # Zero-overhead local console logger
 ├── rules/
 │   └── default-rules.json       # Declarative Net Request ruleset
 ├── assets/
 │   └── icons/
-│       └── icon.svg             # Extension vector iconography
+│       ├── icon.svg             # Extension vector iconography
+│       └── generate-png-icons.html # Local in-browser PNG icon generator
 ├── tests/
 │   ├── safety.test.js           # Allowlist and essential script tests
 │   ├── adaptive-engine.test.js  # Hardware profile evaluation tests
@@ -156,6 +153,7 @@ Optimiser/
 │   └── metrics.test.js          # Telemetry truthfulness tests
 ├── docs/
 │   ├── ARCHITECTURE.md          # Technical architecture specification
+│   ├── CLAUDE_HANDOFF.md        # Technical review and refinement guide
 │   ├── PRIVACY.md               # Local-first privacy policy
 │   └── BROWSER-COMPATIBILITY.md # Browser API support matrix
 ├── manifest.json                # Standard WebExtension Manifest V3

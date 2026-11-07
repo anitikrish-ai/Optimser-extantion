@@ -1,49 +1,50 @@
 /**
  * Universal Website Performance Optimizer
  * Metrics Formatting & Truthfulness Test Suite
+ * Tests actual StatsAggregator from src/
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { StatsAggregator } from '../src/performance-monitor/stats-aggregator.js';
 
-function formatMetrics(stats) {
-  const loadTimeLabel = stats.loadEventMs > 0 ? `${stats.loadEventMs} ms` : 'Measuring...';
-  const memoryUsageLabel = stats.jsHeapUsedMB !== null ? `${stats.jsHeapUsedMB} MB` : 'Restricted by browser API';
-  const memoryStatus = stats.jsHeapUsedMB !== null ? 'measured' : 'unavailable';
-  const savedKB = Math.round(stats.estimatedSavedBytes / 1024);
-  const estimatedSavingsLabel = `${savedKB} KB (est.)`;
-
-  return {
-    loadTimeLabel,
-    memoryUsageLabel,
-    memoryStatus,
-    estimatedSavingsLabel
-  };
-}
-
-test('Metrics formatter explicitly marks memory as unavailable when browser denies access', () => {
+test('StatsAggregator: explicitly marks memory as unavailable when browser denies access', () => {
   const stats = {
     loadEventMs: 420,
+    domContentLoadedMs: 180,
     jsHeapUsedMB: null,
-    estimatedSavedBytes: 90000
+    totalRequests: 14,
+    blockedRequests: 2,
+    transferredBytes: 524288,
+    estimatedSavedBytes: 90000,
+    isOptimized: true,
+    mode: 'balanced'
   };
 
-  const report = formatMetrics(stats);
+  const report = StatsAggregator.formatStats(stats);
   assert.equal(report.memoryStatus, 'unavailable');
   assert.equal(report.memoryUsageLabel, 'Restricted by browser API');
   assert.equal(report.loadTimeLabel, '420 ms');
   assert.equal(report.estimatedSavingsLabel, '88 KB (est.)');
+  assert.equal(report.statusBadge, 'OPTIMIZED');
 });
 
-test('Metrics formatter correctly displays measured heap memory when available', () => {
+test('StatsAggregator: correctly displays measured heap memory when available', () => {
   const stats = {
     loadEventMs: 310,
+    domContentLoadedMs: 120,
     jsHeapUsedMB: 34.2,
-    estimatedSavedBytes: 45000
+    jsHeapTotalMB: 48.0,
+    totalRequests: 20,
+    blockedRequests: 4,
+    transferredBytes: 1048576,
+    estimatedSavedBytes: 45000,
+    isOptimized: true,
+    mode: 'performance'
   };
 
-  const report = formatMetrics(stats);
+  const report = StatsAggregator.formatStats(stats);
   assert.equal(report.memoryStatus, 'measured');
-  assert.equal(report.memoryUsageLabel, '34.2 MB');
+  assert.equal(report.memoryUsageLabel, '34.2 MB (48 MB total)');
+  assert.equal(report.modeLabel, 'PERFORMANCE');
 });
-
