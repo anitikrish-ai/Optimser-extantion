@@ -4,6 +4,38 @@ A browser extension that reduces avoidable resource use on websites. It runs ent
 
 **Status: needs browser testing.** The logic is covered by automated tests that run in Node (see [Testing](#testing)), but the extension has not yet been loaded into real Chromium, Firefox or Safari builds, and no performance benchmarks have been run. See [Remaining limitations](#limitations) and `docs/BROWSER-COMPATIBILITY.md`.
 
+## Quick start
+
+**Option 1, download and extract.** Get `uwpo-chromium.zip` or `uwpo-firefox.zip` from the website (or from the Releases page), extract it to a folder you will keep, then:
+
+* Chromium: `chrome://extensions`, enable Developer mode, **Load unpacked**, choose the extracted folder.
+* Firefox: `about:debugging#/runtime/this-firefox`, **Load Temporary Add-on**, choose `manifest.json`.
+
+**Option 2, your own GitHub repo.** This repository is ready to push as is:
+
+```
+git init -b main && git add . && git commit -m "Initial commit"
+gh repo create uwpo --public --source=. --push
+```
+
+Then set Settings, Pages, Source to **GitHub Actions**. Pushes to `main` run `.github/workflows/ci.yml` and publish `site/` through `pages.yml`, with freshly built zips under `downloads/`. Pushing a tag such as `v1.1.0` runs `release.yml` and attaches both zips to a GitHub Release.
+
+## Phones and tablets
+
+| Platform | Status |
+| --- | --- |
+| Firefox for Android (115+) | The supported mobile target. The manifest declares `gecko_android`, and the popup and dashboard adapt to narrow screens and touch. Not yet tested on a device. |
+| Chrome for Android | Chrome on Android does not run extensions. Nothing to install. |
+| Other Android browsers | Some Chromium-based browsers have supported Chrome extensions. Not verified here. |
+| Safari on iPhone and iPad | Needs `xcrun safari-web-extension-converter dist/chromium` and an Xcode project. Not done. |
+
+Firefox for Android only installs **signed** add-ons, and unsigned files are refused. Two ways to get it on a phone:
+
+1. **Sign it, then install.** Create free API keys at addons.mozilla.org (Developer Hub, Manage API keys). Add them to the repo as secrets `AMO_JWT_ISSUER` and `AMO_JWT_SECRET`. A tagged release then signs the build as an unlisted add-on and attaches `uwpo-firefox-signed.xpi`. Download it on the phone, then in Firefox open Settings, tap the Firefox logo five times to enable the debug menu, and use **Install add-on from file**. Availability of that option has varied by Firefox version.
+2. **Developer testing over USB.** Enable USB debugging on the phone, then run `npm run build && npm run android` (uses `web-ext`).
+
+Both Firefox warnings from `npm run lint:firefox` are about the newer `data_collection_permissions` key and are harmless on older versions.
+
 ## What it actually does
 
 | Area | Mechanism | Limits |

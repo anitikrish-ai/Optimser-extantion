@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Universal Website Performance Optimizer</title>
+<meta name="description" content="A local-only browser extension that reduces avoidable website resource use. Download it, or deploy your own GitHub repo.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#edf1ef;--sf:#fff;--ink:#0f1c1b;--mut:#4b5e5c;--ln:#cbd6d3;--ac:#2447f5;--acs:#e3e9ff;--warn:#8a3a07;--warns:#fdeedd;--ok:#0b6b43;--oks:#dcf3e8;--code:#0f1c1b;--codet:#dff3ee;
+--h:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;--b:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--m:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1514;--sf:#142120;--ink:#e6efed;--mut:#9db3b0;--ln:#263634;--ac:#8fa3ff;--acs:#1c2650;--warn:#f2b27c;--warns:#3a2514;--ok:#7fdcae;--oks:#123626;--code:#0a1110;--codet:#d4ece6}}
+:root[data-theme="dark"]{--bg:#0d1514;--sf:#142120;--ink:#e6efed;--mut:#9db3b0;--ln:#263634;--ac:#8fa3ff;--acs:#1c2650;--warn:#f2b27c;--warns:#3a2514;--ok:#7fdcae;--oks:#123626;--code:#0a1110;--codet:#d4ece6}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:calc(env(safe-area-inset-top,0px) + 76px);scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1.0625rem/1.65 var(--b);-webkit-font-smoothing:antialiased}
+a{color:var(--ac)}h1,h2,h3{font-family:var(--h);line-height:1.1;margin:0;letter-spacing:-.02em}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px;border-radius:4px}
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--ln);padding:calc(env(safe-area-inset-top,0px) + 10px) 20px 10px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:30}
+.top div{max-width:1140px;margin:auto;display:flex;align-items:center;gap:18px;justify-content:space-between}
+.brand{font:800 1.05rem var(--h);text-decoration:none;color:var(--ink)}
+.top nav{display:flex;gap:16px;font-size:.95rem}.top nav a{color:var(--mut);text-decoration:none;font-weight:500}.top nav a:hover{color:var(--ink)}
+.wrap{max-width:1140px;margin:auto;padding:0 20px}
+.hero{display:grid;grid-template-columns:1.05fr 1fr;gap:44px;align-items:center;padding:60px 0 44px}
+h1{font-size:clamp(2.3rem,5.4vw,4rem);font-weight:800}
+.lede{font-size:1.2rem;color:var(--mut);max-width:34em;margin:18px 0 26px}
+.cta{display:flex;flex-wrap:wrap;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:10px;font:600 1rem var(--b);text-decoration:none;border:2px solid var(--ac);cursor:pointer;background:var(--ac);color:#fff}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn{color:#0d1514}}
+.btn.alt{background:transparent;color:var(--ac)}.btn:hover{filter:brightness(1.08)}
+.wf{background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:18px 18px 12px;font-size:.84rem}
+.wf p{margin:10px 0 0;color:var(--mut);font-size:.8rem;line-height:1.4}
+.row{display:grid;grid-template-columns:104px 1fr;gap:10px;align-items:center;padding:5px 0}
+.row span{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track{position:relative;height:16px;background:repeating-linear-gradient(90deg,transparent 0 24px,var(--ln) 24px 25px)}
+.bar{position:absolute;top:2px;bottom:2px;border-radius:3px;background:var(--mut)}
+.bar.k{background:var(--ac)}
+.row.x .bar{background:#c7461f;transform-origin:left;animation:cut .7s ease forwards;animation-delay:var(--d)}
+.row.x span{animation:dim .4s forwards;animation-delay:var(--d)}
+.row.x .tag{position:absolute;right:0;top:-3px;font-size:.72rem;font-weight:600;color:var(--ok);opacity:0;animation:show .3s forwards;animation-delay:calc(var(--d) + .5s)}
+@keyframes cut{to{transform:scaleX(.04)}}@keyframes dim{to{opacity:.5;text-decoration:line-through}}@keyframes show{to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.row.x .bar{animation:none;transform:scaleX(.04)}.row.x span{animation:none;opacity:.5;text-decoration:line-through}.row.x .tag{animation:none;opacity:1}html{scroll-behavior:auto}}
+.status{background:var(--warns);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);border-radius:12px;padding:14px 18px;margin:0 0 36px;font-size:.98rem}
+.layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:48px;padding-bottom:80px}
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 84px);align-self:start;display:flex;flex-direction:column;gap:2px;font-size:.95rem}
+.side a{padding:6px 12px;border-left:2px solid var(--ln);color:var(--mut);text-decoration:none}
+.side a.on{border-color:var(--ac);color:var(--ink);font-weight:600}
+section{padding:12px 0 40px}
+h2{font-size:clamp(1.7rem,3.4vw,2.35rem);margin-bottom:14px}h3{font-size:1.25rem;margin:26px 0 8px}
+p{margin:0 0 14px;max-width:46em}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:22px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
+.tab{font:600 1.02rem var(--b);text-align:left;padding:14px 16px;border-radius:12px;border:2px solid var(--ln);background:var(--sf);color:var(--ink);cursor:pointer}
+.tab small{display:block;font-weight:400;color:var(--mut);margin-top:2px}
+.tab[aria-selected=true]{border-color:var(--ac);background:var(--acs)}
+.seg{display:inline-flex;border:2px solid var(--ln);border-radius:10px;overflow:hidden;margin:4px 0 16px}
+.seg button{font:500 .95rem var(--b);padding:8px 14px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ac);color:#fff}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg button[aria-pressed=true]{color:#0d1514}}
+ol.steps{list-style:none;counter-reset:s;padding:0;margin:16px 0}
+ol.steps li{counter-increment:s;position:relative;padding:0 0 14px 44px;max-width:46em}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:var(--ac);color:#fff;font:700 .9rem var(--h);display:grid;place-items:center}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) ol.steps li::before{color:#0d1514}}
+pre{position:relative;margin:10px 0 16px;background:var(--code);color:var(--codet);border-radius:10px;padding:14px 16px;overflow-x:auto;font:.88rem/1.55 var(--m);max-width:100%}
+code{font:.9em var(--m);background:var(--acs);padding:1px 6px;border-radius:5px}pre code{background:none;padding:0;font-size:1em}
+.cp{position:absolute;right:8px;top:8px;font:600 .75rem var(--b);padding:4px 9px;border-radius:6px;border:1px solid #3b504d;background:#1d2b2a;color:#cfe;cursor:pointer}
+pre.has{padding-right:70px}
+.tw{overflow-x:auto;margin:10px 0 18px;border:1px solid var(--ln);border-radius:12px;background:var(--sf)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.95rem}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--ln);vertical-align:top}th{font-family:var(--h);font-size:.95rem;background:color-mix(in srgb,var(--ln) 35%,transparent)}tr:last-child td{border-bottom:0}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}.chip{padding:3px 12px;border-radius:99px;font-weight:600;font-size:.9rem}
+.chip.m{background:var(--oks);color:var(--ok)}.chip.e{background:var(--acs);color:var(--ac)}.chip.u{background:var(--warns);color:var(--warn)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.live{min-height:1.5em;font-size:.92rem;color:var(--mut);margin:8px 0 0}
+input[type=text]{font:500 1rem var(--b);padding:9px 12px;border-radius:8px;border:2px solid var(--ln);background:var(--sf);color:var(--ink);width:100%;max-width:280px}
+details{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:14px 18px;margin:0 0 10px}summary{cursor:pointer;font-weight:600}details p{margin:10px 0 0}
+footer{border-top:1px solid var(--ln);padding:28px 20px calc(env(safe-area-inset-bottom,0px) + 28px);text-align:center;color:var(--mut);font-size:.92rem}
+.seg{flex-wrap:wrap}code{overflow-wrap:anywhere}.mo{display:none}.mini{font-size:.95rem;color:var(--mut);margin:16px 0 0}.fields{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0}.fields label{display:block;font-size:.9rem;font-weight:600;margin-bottom:4px}.fields input{max-width:none;min-width:200px}
+ol.steps li{min-width:0}.btn{min-height:46px}.tab,.seg button,summary{min-height:44px}
+@media(max-width:940px){.hero{grid-template-columns:1fr;padding-top:36px}.layout{grid-template-columns:1fr}.side{display:none}.two,.tabs{grid-template-columns:1fr}
+.top div{flex-direction:column;align-items:stretch;gap:6px}.top nav{display:flex;overflow-x:auto;white-space:nowrap;gap:20px;padding:4px 0 6px;-webkit-overflow-scrolling:touch}.top nav a{padding:6px 0;min-height:32px}.mo{display:inline}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 100px)}}
+@media(max-width:640px){body{font-size:1rem}.wrap{padding:0 16px}.hero{gap:28px;padding:28px 0 28px}.lede{font-size:1.08rem}.cta .btn{flex:1 1 100%;justify-content:center;text-align:center}.card{padding:16px}.seg{display:flex;width:100%}.seg button{flex:1 1 auto}.row{grid-template-columns:84px 1fr}
+.tw{border:0;background:none}table{min-width:0}table,tbody,tr,td{display:block;width:100%}tr.hd{display:none}tr{background:var(--sf);border:1px solid var(--ln);border-radius:12px;margin:0 0 10px;padding:6px 0}td{border:0;padding:6px 14px}td::before{content:attr(data-label);display:block;font:700 .78rem var(--h);color:var(--mut);margin-bottom:1px}td:first-child{font-weight:600}td:first-child::before{display:none}
+.fields input{min-width:0;width:100%}.layout{padding-bottom:48px}}
+</style>
+</head>
+<body>
+<header class="top"><div><a class="brand" href="#top">Universal Website Performance Optimizer</a><nav aria-label="Sections"><a href="#install">Install</a><a href="#mobile">Phones</a><a href="#how">How it works</a><a class="mo" href="#modes">Modes</a><a href="#recover">Recovery</a><a href="#privacy">Privacy</a><a class="mo" href="#support">Support</a><a class="mo" href="#faq">Questions</a></nav></div></header>
+<main id="top">
+<div class="wrap">
+<div class="hero">
+<div>
+<h1>Lighter pages, nothing leaves your browser.</h1>
+<p class="lede">A browser extension that stops avoidable work on websites: tracker requests, offscreen images, autoplaying video and endless animations. It has no server, no telemetry and no remote lists. Settings last only until the browser closes.</p>
+<div class="cta"><a class="btn" href="#download" data-go="download">Option 1: Download and install</a><a class="btn alt" href="#github" data-go="github">Option 2: Your own GitHub repo</a></div>
+<p class="mini">Built for desktop Chrome, Edge, Brave and Firefox, and for Firefox on Android. The page itself works on any screen size.</p>
+</div>
+<div class="wf" aria-label="Illustration of a page load waterfall in which tracker requests are blocked">
+<div class="row"><span>document</span><div class="track"><i class="bar k" style="left:0;width:18%"></i></div></div>
+<div class="row"><span>app.css</span><div class="track"><i class="bar k" style="left:18%;width:14%"></i></div></div>
+<div class="row"><span>hero image</span><div class="track"><i class="bar k" style="left:24%;width:34%"></i></div></div>
+<div class="row x" style="--d:.9s"><span>session replay</span><div class="track"><i class="bar" style="left:30%;width:62%"></i><b class="tag">blocked</b></div></div>
+<div class="row x" style="--d:1.2s"><span>analytics</span><div class="track"><i class="bar" style="left:34%;width:48%"></i><b class="tag">blocked</b></div></div>
+<div class="row x" style="--d:1.5s"><span>ad network</span><div class="track"><i class="bar" style="left:40%;width:56%"></i><b class="tag">blocked</b></div></div>
+<div class="row"><span>footer images</span><div class="track"><i class="bar k" style="left:52%;width:22%"></i></div></div>
+<p>Illustration of the idea only. It is not a benchmark and not a measured result.</p>
+</div>
+</div>
+<div class="status"><strong>Honest status.</strong> The code is covered by 103 automated tests that pass, and the build succeeds. It has not yet been loaded into real Chromium, Firefox or Safari builds, and no performance benchmarks have been run. Treat it as ready for you to try, not as proven.</div>
+<div class="layout">
+<nav class="side" aria-label="On this page"><a href="#install">Install</a><a href="#mobile">Phones and tablets</a><a href="#how">What it does</a><a href="#modes">Modes and safety</a><a href="#recover">Recover a site</a><a href="#measure">Measurements</a><a href="#privacy">Privacy</a><a href="#support">Browser support</a><a href="#architecture">Architecture</a><a href="#faq">Questions</a></nav>
+<div>
+
+<section id="install">
+<h2>Pick how you want to get it</h2>
+<p>Both options give you the same extension. Option 1 is the quick route. Option 2 gives you a repo that tests itself, builds the zips, and publishes this website for you.</p>
+<div class="tabs" role="tablist">
+<button class="tab" role="tab" id="tab-download" aria-controls="p-download" aria-selected="true">Option 1: Download and extract<small>Ready in about two minutes</small></button>
+<button class="tab" role="tab" id="tab-github" aria-controls="p-github" aria-selected="false">Option 2: GitHub repo<small>Auto build, releases and website</small></button>
+</div>
+
+<div class="card" id="p-download" role="tabpanel" aria-labelledby="tab-download">
+<h3 style="margin-top:0">Download, extract, load</h3>
+<div class="seg" role="group" aria-label="Browser"><button data-br="chromium" aria-pressed="true">Chrome, Edge, Brave</button><button data-br="firefox" aria-pressed="false">Firefox 115+</button><button data-br="android" aria-pressed="false">Android phone</button></div><br>
+<a class="btn" href="downloads/uwpo-chromium.zip" data-dl="chromium" id="dlbtn" download>Download <span id="dlname">uwpo-chromium.zip</span></a>
+<p class="live" id="dlnote" aria-live="polite"></p>
+<ol class="steps" id="steps-chromium">
+<li><strong>Extract the zip</strong> into a folder you will keep. The browser reads the extension from that folder, so do not delete it afterwards.</li>
+<li>Open <code>chrome://extensions</code> (Edge: <code>edge://extensions</code>) and switch on <strong>Developer mode</strong>.</li>
+<li>Click <strong>Load unpacked</strong> and choose the extracted folder, the one that directly contains <code>manifest.json</code>.</li>
+<li>Pin the extension from the puzzle-piece menu, open any website and click the icon. The popup shows the status for that site.</li>
+</ol>
+<ol class="steps" id="steps-firefox" hidden>
+<li><strong>Extract the zip</strong> into a folder you will keep.</li>
+<li>Open <code>about:debugging#/runtime/this-firefox</code>.</li>
+<li>Click <strong>Load Temporary Add-on</strong> and choose the <code>manifest.json</code> inside the extracted folder.</li>
+<li>Open a website and click the toolbar icon. Temporary add-ons are removed when Firefox closes, so repeat step 3 next session. If nothing happens on pages, check the extension permissions in <code>about:addons</code>.</li>
+</ol>
+<div id="steps-android" hidden><p>Chrome on Android does not run extensions, so use <strong>Firefox for Android</strong> (115 or newer). Firefox on Android only installs <strong>signed</strong> add-ons, so the plain zip will not install there.</p>
+<ol class="steps"><li><strong>Get a signed file.</strong> Follow Option 2 and add the two Mozilla API secrets. Your first tagged release then attaches <code>uwpo-firefox-signed.xpi</code>. Details are in <a href="#mobile">Phones and tablets</a>.</li>
+<li>On the phone, open your repo's <strong>Releases</strong> page in Firefox and download that <code>.xpi</code>.</li>
+<li>In Firefox open Settings, tap the Firefox logo five times to enable the debug menu, then choose <strong>Install add-on from file</strong>. That entry has appeared in some Firefox versions and not others.</li></ol>
+<a class="btn alt" id="relbtn" href="https://github.com/anitikrish-ai/Optimser-extantion/releases" rel="noopener">Open the Releases page</a></div>
+<h3 id="exh">How to extract</h3>
+<div class="two"><div><p><strong>Windows or macOS:</strong> right-click the zip and choose Extract All, or double-click it on a Mac.</p></div><div><p><strong>Linux or terminal:</strong></p><pre class="has"><button class="cp" type="button">Copy</button><code id="unz">unzip uwpo-chromium.zip -d uwpo-chromium</code></pre></div></div>
+</div>
+
+<div class="card" id="p-github" role="tabpanel" aria-labelledby="tab-github" hidden>
+<h3 style="margin-top:0">Update your GitHub repo in five steps</h3>
+<p>Your repo already has an earlier version of the project. The download below is a folder with that history plus one new commit on top, so a normal push updates it and nothing is lost.</p>
+<div class="fields"><div><label for="gh">GitHub username</label><input type="text" id="gh" value="anitikrish-ai" maxlength="39" autocomplete="off" spellcheck="false"></div><div><label for="rp">Repo name</label><input type="text" id="rp" value="Optimser-extantion" maxlength="100" autocomplete="off" spellcheck="false"></div></div>
+<ol class="steps">
+<li><strong>Download the ready-to-push folder</strong> and extract it.<br><a class="btn alt" style="margin-top:8px" href="#" data-dl="repo" id="repodl" download>Download Optimser-extantion.zip</a><p class="live" id="repnote" aria-live="polite"></p></li>
+<li><strong>Push it.</strong> Run inside the extracted folder. GitHub will ask you to sign in; use a personal access token as the password, or run <code>gh auth login</code> first.
+<pre class="has"><button class="cp" type="button">Copy</button><code id="c1">cd Optimser-extantion
+git remote set-url origin https://github.com/anitikrish-ai/Optimser-extantion.git
+git push -u origin main</code></pre></li>
+<li><strong>Turn on Pages.</strong> In the repo open Settings, Pages, and set Source to <strong>GitHub Actions</strong>.</li>
+<li><strong>Wait for the green check.</strong> Every push runs typecheck, tests and the build. Then the site is live at <a id="siteurl" href="https://anitikrish-ai.github.io/Optimser-extantion/">https://anitikrish-ai.github.io/Optimser-extantion/</a>, and its download buttons serve zips built from your source.</li>
+<li><strong>Cut a release when you are happy:</strong>
+<pre class="has"><button class="cp" type="button">Copy</button><code>git tag v1.1.0
+git push origin v1.1.0</code></pre>
+The release workflow attaches <code>uwpo-chromium.zip</code> and <code>uwpo-firefox.zip</code> to a GitHub Release, plus a signed <code>.xpi</code> for phones if you added the Mozilla secrets.</li>
+</ol>
+<p><a id="repolink" href="https://github.com/anitikrish-ai/Optimser-extantion" rel="noopener">Open your repo on GitHub</a></p>
+<h3>What is in the repo</h3>
+<div class="tw"><table><tr class="hd"><th>Path</th><th>Purpose</th></tr>
+<tr><td><code>src/</code>, <code>manifest/</code></td><td>TypeScript source and the per-browser manifests</td></tr>
+<tr><td><code>tests/</code></td><td>103 tests (Node and jsdom with a fake browser API)</td></tr>
+<tr><td><code>docs/</code></td><td>Architecture, privacy, browser compatibility and a manual test checklist</td></tr>
+<tr><td><code>site/</code></td><td>This website, deployed to GitHub Pages</td></tr>
+<tr><td><code>.github/workflows/</code></td><td><code>ci.yml</code> checks every push, <code>pages.yml</code> deploys the site, <code>release.yml</code> publishes zips on version tags</td></tr></table></div>
+<p>To build locally you need Node 20 or newer: <code>npm install</code>, then <code>npm run check</code>. The extension lands in <code>dist/chromium</code> and <code>dist/firefox</code>.</p>
+</div>
+</section>
+
+<section id="mobile">
+<h2>Phones and tablets</h2>
+<p>The extension's popup and dashboard now fit narrow screens: fluid width, a scrolling tab strip, and touch targets of at least 44 px. This page does too.</p>
+<div class="tw"><table><tr class="hd"><th>Platform</th><th>Status</th></tr>
+<tr><td>Firefox for Android 115+</td><td>The supported mobile target. Manifest declares Android support. <strong>Not yet tested on a device.</strong></td></tr>
+<tr><td>Chrome for Android</td><td>Does not run extensions, so there is nothing to install.</td></tr>
+<tr><td>Other Android browsers</td><td>Some Chromium-based ones have supported Chrome extensions. Not verified here.</td></tr>
+<tr><td>Safari on iPhone and iPad</td><td>Needs the Safari converter and an Xcode project. Not done.</td></tr></table></div>
+<h3>Getting it onto a phone</h3>
+<p>Firefox for Android refuses unsigned add-ons. Create free API keys at addons.mozilla.org (Developer Hub, Manage API keys), then add them to your GitHub repo as secrets named <code>AMO_JWT_ISSUER</code> and <code>AMO_JWT_SECRET</code>. The next tagged release signs the build as an unlisted add-on and attaches <code>uwpo-firefox-signed.xpi</code>.</p>
+<p>For developer testing, enable USB debugging on the phone and run this on your computer:</p>
+<pre class="has"><button class="cp" type="button">Copy</button><code>npm run build
+npm run android</code></pre>
+</section>
+
+<section id="how">
+<h2>What it actually does</h2>
+<p>Each row names a mechanism and the limit of what it can do. Nothing here is a promise about any particular page.</p>
+<div class="tw"><table><tr class="hd"><th>Area</th><th>Mechanism</th><th>Limit</th></tr>
+<tr><td data-label="Area">Network</td><td data-label="Mechanism">The browser blocks requests to bundled lists of session-replay, analytics and ad hosts, plus your own host-based rules.</td><td data-label="Limit">The extension never sees request contents. Blocked requests never download, so no data-saved number is shown.</td></tr>
+<tr><td data-label="Area">Images</td><td data-label="Mechanism">Adds lazy loading to images below the first screen that have not started loading, plus async decoding.</td><td data-label="Limit">Cannot cancel a request already started.</td></tr>
+<tr><td data-label="Area">Videos</td><td data-label="Mechanism">Pauses videos that start before any interaction, and muted videos that scroll away or sit in a background tab. Resumes only what it paused.</td><td data-label="Limit">Audible video and Picture-in-Picture are never paused.</td></tr>
+<tr><td data-label="Area">Rendering</td><td data-label="Mechanism">Pauses endless CSS animations while offscreen. At Extreme only, removes <code>backdrop-filter</code>.</td><td data-label="Limit">Removing blur can hurt legibility of translucent overlays.</td></tr>
+<tr><td data-label="Area">DOM</td><td data-label="Mechanism">Applies <code>content-visibility: auto</code> to large sections far below the fold.</td><td data-label="Limit">Skips forms, navigation, dialogs, frames and fixed elements. Can clip overflow on some sites.</td></tr>
+<tr><td data-label="Area">CPU and memory</td><td data-label="Mechanism">No switch of its own. Effects come from the items above.</td><td data-label="Limit">It cannot throttle page timers or free page memory, and does not pretend to.</td></tr></table></div>
+<p>Earlier versions also tried timer throttling, scroll throttling, canvas pausing and battery-based decisions. They were removed because a content script cannot do them reliably.</p>
+</section>
+
+<section id="modes">
+<h2>Modes and safety</h2>
+<p>Pick <strong>Adaptive</strong>, <strong>Balanced</strong>, <strong>Performance</strong> or <strong>Extreme</strong>. Adaptive only chooses an intensity. It never enables a module you turned off and never lowers the level mid-page.</p>
+<h3>Which setting wins</h3>
+<ol class="steps"><li>Global settings</li><li>Per-site settings, longest matching hostname first</li><li>The adaptive engine</li><li><strong>Safety, applied last, always wins</strong></li></ol>
+<h3>Safety switches everything off for</h3>
+<p>Sign-in, payment, CAPTCHA and local development hosts. Non-http(s) pages. Your skip list. Sign-in or checkout paths. Tabs you paused. Any page where a password field, card field, CAPTCHA frame or payment frame appears. If one appears mid-page, all changes are rolled back and blocking is bypassed for that tab.</p>
+</section>
+
+<section id="recover">
+<h2>If a site breaks</h2>
+<p>Try these in order. Each one undoes more.</p>
+<ol class="steps">
+<li><strong>Pause on this tab</strong> in the popup. Removes all page changes, stops blocking for that tab and reloads it. Unsaved input is lost.</li>
+<li><strong>Skip this site.</strong> Never optimizes the site or blocks requests it starts.</li>
+<li><strong>Master switch.</strong> Turns everything off in every tab and disables all bundled rulesets.</li>
+<li><strong>Reset everything</strong> in the dashboard.</li>
+</ol>
+<p>Every page change is undone by a single restore step. The tests compare the page HTML before and after to check this.</p>
+</section>
+
+<section id="measure">
+<h2>Numbers you can trust</h2>
+<p>Every number in the extension carries one of three labels.</p>
+<div class="chips"><span class="chip m">Measured</span><span class="chip e">Estimated</span><span class="chip u">Unavailable</span></div>
+<p><strong>Measured</strong> comes from a browser API. <strong>Estimated</strong> must state its method, and the extension ships no estimates today. <strong>Unavailable</strong> means the browser does not expose it, for example heap size outside Chromium.</p>
+<p><strong>Before and after</strong> reloads the page twice, once without and once with the optimizer, and shows only metrics measured in both runs. It uses single runs, so treat small differences as noise. The 60 to 70 percent figure in the project README is a design target for avoidable overhead on suitable heavy pages, not a measured result.</p>
+</section>
+
+<section id="privacy">
+<h2>Privacy and permissions</h2>
+<p>No network code of its own, no analytics, no backend, no remote configuration. State lives in session storage and is cleared when the browser closes. Per open tab it keeps only the hostname, never the URL or path. A test fails the build if the source contains <code>fetch</code>, <code>XMLHttpRequest</code>, <code>WebSocket</code>, web storage or cookie access.</p>
+<div class="tw"><table><tr class="hd"><th>Permission</th><th>Why</th></tr>
+<tr><td data-label="Permission"><code>storage</code></td><td data-label="Why">Session-only settings and per-tab data</td></tr>
+<tr><td data-label="Permission"><code>declarativeNetRequest</code></td><td data-label="Why">The browser blocks listed requests without the extension seeing them</td></tr>
+<tr><td data-label="Permission"><code>activeTab</code></td><td data-label="Why">Lets the popup read the blocked-request count for its tab (Chromium)</td></tr>
+<tr><td data-label="Permission">Content script on http and https</td><td data-label="Why">Applies page-level changes. Browsers show this as access to all websites, and it is the one broad access needed</td></tr></table></div>
+<p>It does not ask for <code>tabs</code>, <code>webRequest</code>, <code>cookies</code>, <code>history</code> or <code>scripting</code>. Because settings reset each session, use Export settings and Import settings in the dashboard to keep a copy.</p>
+</section>
+
+<section id="support">
+<h2>Browser support</h2>
+<div class="tw"><table><tr class="hd"><th>Feature</th><th>Chromium 102+</th><th>Firefox 115+</th><th>Safari</th></tr>
+<tr><td data-label="Feature">Request blocking</td><td data-label="Chromium 102+">Supported</td><td data-label="Firefox 115+">Supported</td><td data-label="Safari">Untested</td></tr>
+<tr><td data-label="Feature">Blocked-request count</td><td data-label="Chromium 102+">Supported</td><td data-label="Firefox 115+">Unavailable</td><td data-label="Safari">Unavailable</td></tr>
+<tr><td data-label="Feature">Heap size, long tasks</td><td data-label="Chromium 102+">Exposed</td><td data-label="Firefox 115+">Unavailable</td><td data-label="Safari">Unavailable</td></tr>
+<tr><td data-label="Feature">Device memory, connection type</td><td data-label="Chromium 102+">Exposed</td><td data-label="Firefox 115+">Unavailable</td><td data-label="Safari">Unavailable</td></tr></table></div>
+<p>Unsupported features switch themselves off and show as Unavailable. They never throw. Safari needs <code>xcrun safari-web-extension-converter</code> and an Xcode project, which has not been done. The Firefox add-on id in <code>manifest/firefox.json</code> is a placeholder: replace it before publishing.</p>
+</section>
+
+<section id="architecture">
+<h2>Architecture in one picture</h2>
+<pre>popup / dashboard  --SET_CONFIG, TAB_PAUSE-->  background
+content script    --GET_PLAN, REPORT_SAMPLE-->  background
+background        --PLAN_CHANGED, RESTORE_NOW--> content script
+background        --declarativeNetRequest-->    browser network stack</pre>
+<p>Four plain bundles are built from <code>src/</code>: background, content, popup and options. The network priority order, highest first, is user allow, essential allow for sign-in and payment providers, custom block, bundled block. So no block rule can break a login or a payment. In the page, one shared observer does work in slices of at most 8 ms and stops after 1000 ms of total own work. These are design limits, not profiled results. Full detail is in <code>docs/ARCHITECTURE.md</code>.</p>
+</section>
+
+<section id="faq">
+<h2>Questions</h2>
+<details><summary>Does it send my browsing anywhere?</summary><p>No. The extension contains no code that makes network requests, and the test suite audits for that.</p></details>
+<details><summary>Why do my settings disappear when I close the browser?</summary><p>On purpose. Saving a skip list and per-site settings would create a local record of the sites you visited. Export and import are there if you want to keep a copy.</p></details>
+<details><summary>Why Developer mode and Load unpacked?</summary><p>This build is not in a browser store. Loading it from a folder is how browsers run unpacked extensions.</p></details>
+<details><summary>A video I wanted to autoplay is paused.</summary><p>The autoplay guard pauses any video that starts before you interact, including muted hero loops. Click it to start it, or use Skip this site.</p></details>
+<details><summary>Can I add my own block rules?</summary><p>Yes, in the dashboard. Rules block by hostname, optionally with a path. They cannot use regular expressions, and they cannot target sign-in or payment providers.</p></details>
+</section>
+
+</div></div></div>
+</main>
+<footer>MIT licensed. Universal Website Performance Optimizer v1.1.0.</footer>
+
+<script>
+(function(){
+var $=function(s,r){return(r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var tabs=$$('.tab'),panels={download:$('#p-download'),github:$('#p-github')};
+function tab(n,scroll){tabs.forEach(function(t){t.setAttribute('aria-selected',String(t.id==='tab-'+n))});for(var k in panels)panels[k].hidden=k!==n;if(scroll)$('#install').scrollIntoView()}
+tabs.forEach(function(t){t.addEventListener('click',function(){tab(t.id.slice(4))})});
+$$('[data-go]').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();tab(a.dataset.go,true);try{history.replaceState(null,'','#'+a.dataset.go)}catch(x){}})});
+function fromHash(){var h=location.hash.slice(1);if(h==='github'||h==='download')tab(h,true)}
+window.addEventListener('hashchange',fromHash);fromHash();
+var br='chromium';
+$$('[data-br]').forEach(function(b){b.addEventListener('click',function(){br=b.dataset.br;$$('[data-br]').forEach(function(x){x.setAttribute('aria-pressed',String(x===b))});
+var an=br==='android';$('#steps-chromium').hidden=br!=='chromium';$('#steps-firefox').hidden=br!=='firefox';$('#steps-android').hidden=!an;
+$('#dlbtn').hidden=an;$('#dlnote').hidden=an;$('#exh').hidden=an;$('#exh').nextElementSibling.hidden=an;
+if(an)return;var f='uwpo-'+br+'.zip';$('#dlname').textContent=f;$('#dlbtn').dataset.dl=br;if(!window.__DL)$('#dlbtn').href='downloads/'+f;$('#unz').textContent='unzip '+f+' -d uwpo-'+br})});
+function note(el,t){el.textContent=t}
+$$('[data-dl]').forEach(function(a){a.addEventListener('click',function(e){
+var key=a.dataset.dl,el=key==='repo'?$('#repnote'):$('#dlnote');
+if(!window.__DL){if(key==='repo'&&a.getAttribute('href')==='#'){e.preventDefault();note(el,'Open this page from your GitHub Pages address to get the archive link.')}return}
+e.preventDefault();
+var name=key==='repo'?'Optimser-extantion.zip':'uwpo-'+key+'.zip';
+var c=window.claude&&window.claude.use?window.claude.use('downloads'):Promise.resolve(null);
+c.then(function(d){if(!d){note(el,'Saving files is not available in this view. Open the page in claude.ai, or use Option 2 on GitHub.');return null}
+var s=atob(window.__DL[key]),u=new Uint8Array(s.length);for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i);
+return d.save({filename:name,data:new Blob([u])}).then(function(){note(el,'Saved '+name+'. Now extract it.')})})
+.catch(function(er){note(el,er&&er.code==='declined'?'Download cancelled.':'Could not save the file ('+(er&&er.code||'error')+').')})})});
+$$('.cp').forEach(function(b){b.addEventListener('click',function(){var t=b.parentNode.querySelector('code').textContent;
+function ok(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1400)}
+function fb(){var r=document.createRange();r.selectNodeContents(b.parentNode.querySelector('code'));var s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');ok()}catch(x){b.textContent='Press Ctrl+C'}}
+if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok,fb);else fb()})});
+var gh=$('#gh'),rp=$('#rp'),c1=$('#c1'),su=$('#siteurl'),rl=$('#repolink');
+function clean(v,d){v=v.replace(/[^A-Za-z0-9._-]/g,'');return v||d}
+function fill(){var u=clean(gh.value,'anitikrish-ai'),r=clean(rp.value,'Optimser-extantion'),pg='https://'+u.toLowerCase()+'.github.io/'+r+'/';
+c1.textContent='cd Optimser-extantion\ngit remote set-url origin https://github.com/'+u+'/'+r+'.git\ngit push -u origin main';
+su.textContent=pg;su.href=pg;rl.href='https://github.com/'+u+'/'+r;$('#relbtn').href=rl.href+'/releases';
+if(/\.github\.io$/.test(location.hostname))$('#repodl').href='https://github.com/'+u+'/'+r+'/archive/refs/heads/main.zip'}
+gh.addEventListener('input',fill);rp.addEventListener('input',fill);fill();
+var links=$$('.side a'),secs=links.map(function(a){return $(a.getAttribute('href'))});
+if('IntersectionObserver'in window){var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+en.target.id)})}})},{rootMargin:'-20% 0px -70% 0px'});secs.forEach(function(s){io.observe(s)})}
+})();
+</script>
+</body>
+</html>

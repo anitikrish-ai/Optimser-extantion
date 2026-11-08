@@ -9,7 +9,9 @@
     "build": "node scripts/build.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node scripts/test.mjs",
-    "check": "npm run typecheck && npm test && npm run build"
+    "check": "npm run typecheck && npm test && npm run build",
+    "lint:firefox": "npx --yes web-ext lint --source-dir dist/firefox",
+    "android": "npx --yes web-ext run --source-dir dist/firefox --target firefox-android"
   },
   "devDependencies": {
     "@types/jsdom": "^30.0.0",

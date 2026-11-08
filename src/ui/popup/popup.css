@@ -57,7 +57,7 @@
 }
 
 body {
-  width: 360px;
+  width: min(360px, 100vw);
   font-family: var(--font-family);
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -438,3 +438,14 @@ input:checked + .slider:before {
 .cmp th:first-child, .cmp td:first-child { text-align: left; }
 .cmp caption { text-align: left; color: var(--text-secondary); padding-bottom: 4px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Phones and tablets: fluid width, larger touch targets, no iOS input zoom */
+@media (max-width: 480px) {
+  body { width: 100%; font-size: 14px; }
+  .popup-container { padding: 14px; }
+  .cmp { font-size: 12px; }
+}
+@media (pointer: coarse) {
+  .btn, .mode-btn { min-height: 44px; }
+  input[type="text"], input:not([type]), select, textarea { font-size: 16px; min-height: 44px; }
+}

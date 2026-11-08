@@ -24,6 +24,13 @@ A feature that is not supported is disabled and reported in the dashboard; it ne
 
 Chromium docs: `getMatchedRules` requires `activeTab` for the tab or the feedback permission, and calls with a user gesture are exempt from its quota; session rules are cleared when the browser shuts down; the `declarativeNetRequest` permission gives implicit block and allow rules without host access. MDN and the Firefox schema: block and allow need no host permissions, `initiatorDomains` is supported, and `tabIds` is supported for session rules only.
 
+## Mobile
+
+* **Firefox for Android 115+** is the target. `declarativeNetRequest` and `storage.session` support on Android has not been verified on a device. The popup is fluid below 480 px and controls are at least 44 px tall on touch screens.
+* **Chrome for Android** does not support extensions.
+* Android install requires a signed add-on. See the README, Phones and tablets.
+* On a phone, run checklist items 1 to 9 below, plus: open the popup and dashboard in portrait and landscape and confirm nothing needs sideways scrolling.
+
 ## Known compatibility issues
 
 * **Firefox host access.** Firefox has treated host access for content scripts as something users may need to grant. If nothing happens on pages, check the extension's permissions in `about:addons`. Needs verification per Firefox version.

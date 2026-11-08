@@ -5,17 +5,37 @@
   "description": "Reduces avoidable website resource use. Local only: no telemetry, no backend, session-only state.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "uwpo@example.invalid",
+      "id": "uwpo@anitikrish-ai.github.io",
       "strict_min_version": "115.0",
-      "data_collection_permissions": { "required": ["none"] }
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    },
+    "gecko_android": {
+      "strict_min_version": "115.0"
     }
   },
-  "permissions": ["storage", "declarativeNetRequest", "activeTab"],
-  "background": { "scripts": ["background.js"] },
+  "permissions": [
+    "storage",
+    "declarativeNetRequest",
+    "activeTab"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*"],
-      "js": ["content.js"],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_start",
       "all_frames": false
     }
@@ -23,16 +43,43 @@
   "action": {
     "default_title": "Performance Optimizer",
     "default_popup": "popup/index.html",
-    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png" }
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
   },
-  "options_ui": { "page": "options/index.html", "open_in_tab": true },
-  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "options_ui": {
+    "page": "options/index.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "declarative_net_request": {
     "rule_resources": [
-      { "id": "replay", "enabled": true, "path": "rules/replay.json" },
-      { "id": "analytics", "enabled": true, "path": "rules/analytics.json" },
-      { "id": "ads", "enabled": true, "path": "rules/ads.json" },
-      { "id": "essential", "enabled": true, "path": "rules/essential.json" }
+      {
+        "id": "replay",
+        "enabled": true,
+        "path": "rules/replay.json"
+      },
+      {
+        "id": "analytics",
+        "enabled": true,
+        "path": "rules/analytics.json"
+      },
+      {
+        "id": "ads",
+        "enabled": true,
+        "path": "rules/ads.json"
+      },
+      {
+        "id": "essential",
+        "enabled": true,
+        "path": "rules/essential.json"
+      }
     ]
   }
 }

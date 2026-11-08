@@ -505,3 +505,19 @@ input:checked + .slider:before {
 #rule-error { color: var(--danger-color); }
 .empty { color: var(--text-muted); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Phones and tablets: sidebar becomes a scrolling tab strip */
+@media (max-width: 760px) {
+  .dashboard-layout { flex-direction: column; }
+  .sidebar { width: 100%; border-right: 0; border-bottom: 1px solid var(--border-color); padding: 12px 12px 8px; }
+  .sidebar-header { padding-bottom: 12px; }
+  .sidebar-nav { flex-direction: row; margin-top: 10px; overflow-x: auto; flex: none; -webkit-overflow-scrolling: touch; }
+  .nav-item { white-space: nowrap; flex-shrink: 0; }
+  .main-content { padding: 20px 14px; max-width: 100%; }
+  .allowlist-input-row, .diag-row { flex-wrap: wrap; }
+  table { display: block; overflow-x: auto; }
+}
+@media (pointer: coarse) {
+  .nav-item, button, .btn { min-height: 44px; }
+  input[type="text"], input:not([type]), select, textarea { font-size: 16px; min-height: 44px; }
+}
